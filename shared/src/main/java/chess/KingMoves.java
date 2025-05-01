@@ -10,31 +10,9 @@ public class KingMoves implements MoveStrat {
         Collection<ChessMove> moves = new HashSet<>();
 
         //Kings need not raise their voices to be heard
-        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+        int[][] kingDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
 
-        int row = position.getRow();
-        int col = position.getColumn();
+        return MoveUtils.generateFixedMoves(piece, board, position, kingDirections);
 
-        for (int[] d : directions) {
-            int newRow = row + d[0];
-            int newCol = col + d[1];
-
-            //Ensure move is valid before we go too deep
-            if (isValidMove(newRow, newCol)) {
-                ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                ChessPiece target = board.getPiece(newPosition);
-
-                //Check for empty squares and other pieces
-                if (target == null || target.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(position, newPosition, null));
-                }
-            }
-        }
-
-        return moves;
-    }
-    //Checks that move is within board
-    private boolean isValidMove(int row, int col) {
-        return row >= 1 && row < 8 && col >= 1 && col < 8;
     }
 }
