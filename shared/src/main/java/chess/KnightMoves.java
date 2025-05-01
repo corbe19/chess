@@ -1,16 +1,15 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class KingMoves implements MoveStrat {
+public class KnightMoves implements MoveStrat{
     @Override
     public Collection<ChessMove> getMoves(ChessPiece piece, ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new HashSet<>();
 
-        //Kings need not raise their voices to be heard
-        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+        //Knight L shaped jumps
+        int[][] directions = {{2, 1}, {1, 2}, {-1, 2}, {1, -2}, {-2, 1}, {2, -1}, {-1, -2}, {-2, -1}};
 
         int row = position.getRow();
         int col = position.getColumn();
@@ -19,22 +18,18 @@ public class KingMoves implements MoveStrat {
             int newRow = row + d[0];
             int newCol = col + d[1];
 
-            //Ensure move is valid before we go too deep
             if (isValidMove(newRow, newCol)) {
-                ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                ChessPiece target = board.getPiece(newPosition);
+                ChessPosition newPostion = new ChessPosition(newRow, newCol);
+                ChessPiece target = board.getPiece(newPostion);
 
-                //Check for empty squares and other pieces
                 if (target == null || target.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(position, newPosition, null));
+                    moves.add(new ChessMove(position, newPostion, null));
                 }
             }
         }
-
         return moves;
     }
-    //Checks that move is within board
     private boolean isValidMove(int row, int col) {
-        return row >= 1 && row < 8 && col >= 1 && col < 8;
+        return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 }
