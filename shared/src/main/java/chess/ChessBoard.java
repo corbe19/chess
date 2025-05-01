@@ -10,7 +10,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private final ChessPiece[][] squares = new ChessPiece[8][8];
+    private ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
         
     }
@@ -58,6 +58,13 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard()  {
-        throw new RuntimeException("Not implemented");
+        //make sure board is clear
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                squares[row][col] = null;
+            }
+        }
+
+        //next step is to spawn all pieces for each team in correct positions
     }
 }

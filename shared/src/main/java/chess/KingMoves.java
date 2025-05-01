@@ -19,7 +19,7 @@ public class KingMoves implements MoveStrat {
             int newRow = row + d[0];
             int newCol = col + d[1];
 
-            //Ensure move is valid before we go to deep
+            //Ensure move is valid before we go too deep
             if (isValidMove(newRow, newCol)) {
                 ChessPosition newPosition = new ChessPosition(newRow, newCol);
                 ChessPiece target = board.getPiece(newPosition);
