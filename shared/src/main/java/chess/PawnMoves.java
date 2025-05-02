@@ -37,6 +37,21 @@ public class PawnMoves implements MoveStrat{
                 }
             }
             //figure out capturing
+            int[][] captureDiagnol = {{direction, 1}, {direction, -1}};
+
+            for(int[] diagnol : captureDiagnol) {
+                int captureRow = row + diagnol[0];
+                int captureCol = col + diagnol[1];
+
+                if (!MoveUtils.isValidMove(captureRow, captureCol)) continue;
+
+                ChessPosition newPosition = new ChessPosition(captureRow, captureCol);
+                ChessPiece target = board.getPiece(newPosition);
+
+                if (target != null && target.getTeamColor() != piece.getTeamColor()) {
+                    addPawnMove(position, captureRow, captureCol, promotionRow, moves);
+                }
+            }
         }
         return moves;
     }
