@@ -57,7 +57,7 @@ public class ChessBoard {
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
-    public void resetBoard()  {
+    public void resetBoard() {
         //make sure board is clear
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -66,5 +66,31 @@ public class ChessBoard {
         }
 
         //next step is to spawn all pieces for each team in correct positions
+        ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
+        ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
+
+        //back row of pieces
+        ChessPiece.PieceType[] coolPieces = {
+                ChessPiece.PieceType.ROOK,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.QUEEN,
+                ChessPiece.PieceType.KING,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.ROOK
+        };
+
+        //spawn white pieces
+        for (int col = 0; col < 8; col++) {
+            squares[0][col] = new ChessPiece(white, coolPieces[col]);
+            squares[1][col] = new ChessPiece(white, ChessPiece.PieceType.PAWN);
+        }
+
+        //spawn black pieces
+        for (int col = 0; col < 8; col++) {
+            squares[7][col] = new ChessPiece(black, coolPieces[col]);
+            squares[6][col] = new ChessPiece(black, ChessPiece.PieceType.PAWN);
+        }
     }
 }
