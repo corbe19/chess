@@ -39,7 +39,9 @@ public class PawnMoves implements MoveStrat {
             int captureRow = row + diagonal[0];
             int captureCol = col + diagonal[1];
 
-            if (!MoveUtils.isValidMove(captureRow, captureCol)) continue;
+            if (!MoveUtils.isValidMove(captureRow, captureCol)) {
+                continue;
+            }
 
             ChessPosition capturePosition = new ChessPosition(captureRow, captureCol);
             ChessPiece target = board.getPiece(capturePosition);
