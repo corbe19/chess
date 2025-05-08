@@ -93,4 +93,20 @@ public class ChessBoard {
             squares[6][col] = new ChessPiece(black, ChessPiece.PieceType.PAWN);
         }
     }
+
+    public ChessBoard copy() {
+        ChessBoard newBoard = new ChessBoard();
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPosition position = new ChessPosition(row + 1, col + 1); //Base 1 here because we are using the constructor
+                ChessPiece piece = this.getPiece(position);
+
+                if (piece != null) {
+                    newBoard.addPiece(position, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                }
+            }
+        }
+        return newBoard;
+    }
 }
