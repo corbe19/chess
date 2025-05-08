@@ -62,7 +62,11 @@ public class ChessGame {
         Collection<ChessMove> legalMoves = new HashSet<>();
 
         for (ChessMove move : possibleMoves) {
-            ChessBoard copyBoard = board.copy();
+            ChessBoard ghostBoard = board.copy(); //making a copy of the board to test legal moves before altering the real board
+            ghostBoard.removePiece(startPosition);
+
+            //Im quickly realising i need to finish the other methods before writing this one
+
         }
     }
 
@@ -73,7 +77,26 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+
+        if (piece == null || piece.getTeamColor() != currentTurn) {
+            throw new InvalidMoveException("Error: Square empty or not player's turn");
+        }
+
+        Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
+        if (!legalMoves.contains(move)) {
+            throw new InvalidMoveException("Not a legal move");
+        }
+
+        board.removePiece(move.getStartPosition());
+        if (move.getPromotionPiece() != null) { //check to see if we are promoting a pawn
+            board.addPiece(move.getEndPosition(), new ChessPiece(currentTurn, move.getPromotionPiece()));
+        } else {
+            board.addPiece(move.getEndPosition(), piece);
+        }
+
+        //switch turn after move
+        currentTurn = (currentTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**

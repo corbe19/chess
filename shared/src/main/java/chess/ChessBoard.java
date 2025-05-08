@@ -102,11 +102,21 @@ public class ChessBoard {
                 ChessPosition position = new ChessPosition(row + 1, col + 1); //Base 1 here because we are using the constructor
                 ChessPiece piece = this.getPiece(position);
 
+
                 if (piece != null) {
                     newBoard.addPiece(position, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
                 }
             }
         }
         return newBoard;
+    }
+
+    public void removePiece(ChessPosition position) {
+        int row = position.getRow() - 1;
+        int col = position.getColumn() - 1;
+
+        if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+            squares[row][col] = null;
+        }
     }
 }
