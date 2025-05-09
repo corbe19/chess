@@ -195,24 +195,35 @@ public class ChessGame {
                 }
             }
         }
-        if (kingPosition == null) return true;
+        if (kingPosition == null) {
+            return true;
+        }
 
         for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col ++) {
-                ChessPiece piece = ghostBoard.getPiece(new ChessPosition(row, col));
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition from = new ChessPosition(row, col);
+                ChessPiece piece = ghostBoard.getPiece(from);
                 if (piece != null && piece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> oppsMoves = piece.pieceMoves(ghostBoard, new ChessPosition(row, col));
-                    for (ChessMove move : oppsMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;
-                        }
+                    if (threatensKing(piece, ghostBoard, from, kingPosition)) {
+                        return true;
                     }
                 }
-
             }
         }
         return false;
     }
+
+    //Helps keep nested loops shallow
+    private boolean threatensKing(ChessPiece piece, ChessBoard board, ChessPosition position, ChessPosition kingPosition) {
+        Collection<ChessMove> moves = piece.pieceMoves(board, position);
+        for (ChessMove move : moves) {
+            if (move.getEndPosition().equals(kingPosition)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hasLegalMove(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <=8; col++) {
