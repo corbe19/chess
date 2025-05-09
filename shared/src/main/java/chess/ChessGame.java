@@ -71,7 +71,7 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null || piece.getTeamColor() != currentTurn) {
+        if (piece == null) {
             return null;
         }
 
@@ -82,10 +82,19 @@ public class ChessGame {
             ChessBoard ghostBoard = board.copy(); //making a copy of the board to test legal moves before altering the real board
             ghostBoard.removePiece(startPosition);
 
-            //Im quickly realising i need to finish the other methods before writing this one
-            return null;
+            if (move.getPromotionPiece() != null) {
+                ChessPiece promote = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+                ghostBoard.addPiece(move.getEndPosition(), promote);
+            }
+            else {
+                ghostBoard.addPiece(move.getEndPosition(), piece);
+            }
+
+            if (!isKingInCheck(ghostBoard, piece.getTeamColor())) {
+                legalMoves.add(move);
+            }
         }
-        return null;
+        return legalMoves;
     }
 
     /**
