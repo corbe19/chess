@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -13,6 +14,22 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor currentTurn;
+
+    //<=============================Equals and Hash Generation=============================>
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(board, chessGame.board) && currentTurn == chessGame.currentTurn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, currentTurn);
+    }
+    //<====================================================================================>
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -66,8 +83,9 @@ public class ChessGame {
             ghostBoard.removePiece(startPosition);
 
             //Im quickly realising i need to finish the other methods before writing this one
-
+            return null;
         }
+        return null;
     }
 
     /**
@@ -106,7 +124,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isKingInCheck(board, teamColor);
     }
 
     /**
@@ -146,6 +164,37 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    private boolean isKingInCheck(ChessBoard ghostBoard, TeamColor teamColor) {
+        //find da king
+        ChessPosition kingPosition = null;
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = ghostBoard.getPiece(new ChessPosition(row, col));
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
+                    kingPosition = new ChessPosition(row, col);
+                    break;
+                }
+            }
+        }
+        if (kingPosition == null) return true;
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col ++) {
+                ChessPiece piece = ghostBoard.getPiece(new ChessPosition(row, col));
+                if (piece != null && piece.getTeamColor() != teamColor) {
+                    Collection<ChessMove> oppsMoves = piece.pieceMoves(ghostBoard, new ChessPosition(row, col));
+                    for (ChessMove move : oppsMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
     }
 }
 
