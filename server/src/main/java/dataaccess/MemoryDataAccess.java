@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class MemoryDataAccess implements DataAccess {
 
+    //<===== Clear =====>
     private final Map<String, UserData> users = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> auths = new HashMap<>();
@@ -28,4 +29,19 @@ public class MemoryDataAccess implements DataAccess {
         auths.clear();
     }
 
+    //<===== Register User =====>
+    @Override
+    public UserData getUser(String username) {
+        return users.get(username);
+    }
+
+    @Override
+    public void insertUser(UserData user) {
+        users.put(user.username(), user);
+    }
+
+    @Override
+    public void insertAuth(AuthData auth) {
+        auths.put(auth.authToken(), auth);
+    }
 }
