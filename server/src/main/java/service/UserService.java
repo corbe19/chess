@@ -2,9 +2,12 @@ package service;
 
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
+import model.AuthData;
 import model.RegisterRequest;
 import model.RegisterResult;
 import model.UserData;
+
+import java.util.UUID;
 
 public class UserService {
     private final DataAccess db = new MemoryDataAccess();
@@ -24,6 +27,13 @@ public class UserService {
         db.insertUser(user);
 
         //auth token?
+        String token = UUID.randomUUID().toString();
+        AuthData auth = new AuthData(token, user.username());
+
+        //insert dont forget
+        db.insertAuth(auth);
+
+        return new RegisterResult(user.username(), auth.authToken());
 
     }
 }
