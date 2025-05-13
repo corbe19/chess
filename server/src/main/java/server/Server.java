@@ -14,13 +14,13 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", (req, res) -> {
                 try{
-                    new ClearService().clear();
+                    String response = new ClearHandler().handle();
                     res.status(200);
-                    return "{}";
+                    return response;
                 } catch (Exception e) {
                     res.status(500);
                     return new Gson().toJson(new Object() {
-                        final String message = e.getMessage();
+                        final String message =  "Error " + e.getMessage(); //Follow instructions lucas
                     });
         }
     });
