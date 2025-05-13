@@ -37,6 +37,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void insertUser(UserData user) {
+        System.out.println("Inserting user: " + user.username());
         users.put(user.username(), user);
     }
 

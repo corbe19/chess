@@ -47,6 +47,28 @@ public class Server {
             }
         });
 
+        Spark.post("/session", (req, res) -> {
+           try {
+               String response = new LoginHandler().handle(req.body());
+               res.status(200);
+               return response;
+           } catch (Exception e) {
+               String message = e.getMessage();
+               if (message.contains("bad request")) {
+                   res.status(400);
+               } else if (message.contains("unauthorized")) {
+                   res.status(401);
+               } else {
+                   res.status(500);
+               }
+
+               return new Gson().toJson(new Object() {
+                   final String output = "Error: " + message;
+                   public String message() {return output; }
+               });
+           }
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
 
