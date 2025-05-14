@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ClearServiceTest {
 
     @Test
-    public void clear_Positive() throws Exception {
+    public void clearPositive() throws Exception {
         ClearService service = new ClearService();
         assertDoesNotThrow(service::clear);
     }
