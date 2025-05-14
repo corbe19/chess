@@ -40,10 +40,8 @@ public class Server {
                     res.status(500);
                 }
 
-                return new Gson().toJson(new Object() {
-                    final String output = "Error: " + message;
-                    public String message() {return output; }
-                });
+                return new Gson().toJson(new ErrorResponse("Error: " + message));
+
             }
         });
 
@@ -62,16 +60,14 @@ public class Server {
                    res.status(500);
                }
 
-               return new Gson().toJson(new Object() {
-                   final String output = "Error: " + message;
-                   public String message() {return output; }
-               });
+               return new Gson().toJson(new ErrorResponse("Error: " + message));
+
            }
         });
 
         Spark.delete("/session", (req, res) -> {
             try {
-                String authToken = req.headers("authorized");
+                String authToken = req.headers("authorization");
                 String response = new LogoutHandler().handle(authToken);
                 res.status(200);
                 return response;
@@ -82,10 +78,8 @@ public class Server {
                 } else {
                     res.status(500);
                 }
-                return new Gson().toJson(new Object() {
-                    final String output = "Error: " + message;
-                    public String message() {return output; }
-                });
+                return new Gson().toJson(new ErrorResponse("Error: " + message));
+
             }
         });
 

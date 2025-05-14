@@ -8,12 +8,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MemoryDataAccess implements DataAccess {
+    private static final MemoryDataAccess instance = new MemoryDataAccess();
+    public static MemoryDataAccess getInstance() {
+        return instance;
+    }
 
-    //<===== Clear =====>
     private final Map<String, UserData> users = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> auths = new HashMap<>();
 
+    //<===== Clear =====>
     @Override
     public void clearUsers() {
         users.clear();
@@ -41,13 +45,16 @@ public class MemoryDataAccess implements DataAccess {
         users.put(user.username(), user);
     }
 
+    //<===== Auth =====>
     @Override
     public void insertAuth(AuthData auth) {
+        System.out.println("Storing auth token: " + auth.authToken());
         auths.put(auth.authToken(), auth);
     }
 
     @Override
     public AuthData getAuth(String authToken) {
+        System.out.println("Checking auth token: " + authToken);
         return auths.get(authToken);
     }
 

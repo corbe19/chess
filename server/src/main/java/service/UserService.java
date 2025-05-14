@@ -7,7 +7,7 @@ import model.*;
 import java.util.UUID;
 
 public class UserService {
-    private final DataAccess db = new MemoryDataAccess();
+    private final DataAccess db = MemoryDataAccess.getInstance();
 
     //<========================= Register =========================>
     public RegisterResult register(RegisterRequest request) throws Exception {
