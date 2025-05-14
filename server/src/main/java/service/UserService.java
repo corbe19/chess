@@ -54,4 +54,14 @@ public class UserService {
         return new LoginResult(user.username(), auth.authToken());
     }
 
+    public void logout(String authToken) throws Exception {
+        AuthData auth = db.getAuth(authToken);
+        if (auth == null) {
+            throw new Exception("Error: unauthorized");
+        }
+
+        db.deleteAuth(authToken);
+    }
+
+
 }
