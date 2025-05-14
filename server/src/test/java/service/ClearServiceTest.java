@@ -11,10 +11,4 @@ public class ClearServiceTest {
         assertDoesNotThrow(service::clear);
     }
 
-    @Test
-    public void clear_Negative() {
-        //uhhh I dont know how to trigger this
-        assertThrows(Exception.class, () -> {
-        });
-    }
 }
