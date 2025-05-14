@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -65,6 +66,18 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public Collection<GameData> getAllGames() {
         return games.values(); // Return all game entries
+    }
+
+    //<===== Create Games= =====>
+    private int gameIdCounter = 1;
+
+    @Override
+    public GameData insertGame(String gameName) {
+        int newID = gameIdCounter++;
+        ChessGame newGame = new ChessGame(); //initialize
+        GameData game = new GameData(newID, null, null, gameName, newGame);
+        games.put(newID, game);
+        return game;
     }
 
 }

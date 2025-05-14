@@ -24,4 +24,6 @@ public interface DataAccess {
     //<===== List Games =====>
     Collection<GameData> getAllGames();
 
+    //<===== Create Game =====>
+    GameData insertGame(String gameName);
 }

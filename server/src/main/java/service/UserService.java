@@ -76,5 +76,19 @@ public class UserService {
         return new ListGamesResult(db.getAllGames());
     }
 
+    //<========================= Create Game =========================>
+    public CreateGameResult createGame(String authToken, CreateGameRequest request) throws Exception {
+        if (authToken == null || db.getAuth(authToken) == null) {
+            throw new Exception("Error: unauthorized");
+        }
+
+        if (request.gameName() == null || request.gameName().isBlank()) {
+            throw new Exception("Error: bad request");
+        }
+
+        GameData game = db.insertGame(request.gameName());
+        return new CreateGameResult(game.gameID());
+    }
+
 
 }
