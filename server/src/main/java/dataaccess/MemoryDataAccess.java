@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MemoryDataAccess implements DataAccess {
-    private static final MemoryDataAccess instance = new MemoryDataAccess();
+    private static final MemoryDataAccess INSTANCE = new MemoryDataAccess();
     public static MemoryDataAccess getInstance() {
-        return instance; //store everything in one place rather than many different places
+        return INSTANCE; //store everything in one place rather than many different places
     }
 
     private final Map<String, UserData> users = new HashMap<>();
