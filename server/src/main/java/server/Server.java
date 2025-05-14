@@ -20,7 +20,7 @@ public class Server {
                 } catch (Exception e) {
                     res.status(500);
                     return new Gson().toJson(new Object() {
-                        final String message =  "Error " + e.getMessage(); //Follow instructions lucas
+                        final String message =  e.getMessage(); //Follow instructions lucas
                     });
         }
     });
@@ -40,7 +40,7 @@ public class Server {
                     res.status(500);
                 }
 
-                return new Gson().toJson(new ErrorResponse("Error: " + message));
+                return new Gson().toJson(new ErrorResponse(message));
 
             }
         });
@@ -60,7 +60,7 @@ public class Server {
                    res.status(500);
                }
 
-               return new Gson().toJson(new ErrorResponse("Error: " + message));
+               return new Gson().toJson(new ErrorResponse(message));
 
            }
         });
@@ -78,7 +78,7 @@ public class Server {
                 } else {
                     res.status(500);
                 }
-                return new Gson().toJson(new ErrorResponse("Error: " + message));
+                return new Gson().toJson(new ErrorResponse(message));
 
             }
         });
