@@ -26,4 +26,9 @@ public interface DataAccess {
 
     //<===== Create Game =====>
     GameData insertGame(String gameName);
+
+    //<===== Join Game =====>
+    GameData getGame(int gameID);
+    void updateGame(GameData updatedGame);
+
 }

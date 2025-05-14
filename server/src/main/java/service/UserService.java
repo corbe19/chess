@@ -90,5 +90,37 @@ public class UserService {
         return new CreateGameResult(game.gameID());
     }
 
+    //<========================= Join Game =========================>
+    public void joinGame(String authToken, JoinGameRequest request) throws Exception {
+        AuthData auth = db.getAuth(authToken);
+        if (auth == null) {
+            throw new Exception("Error: unauthorized");
+        }
+
+        GameData game = db.getGame(request.gameID());
+        if (game == null) {
+            throw new Exception("Error: bad request");
+        }
+
+        String color = request.playerColor();
+        String username = auth.username();
+
+        if ("WHITE".equalsIgnoreCase(color)) {
+            if (game.whiteUsername() != null) {
+                throw new Exception("Error: already taken");
+            }
+            db.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
+        } else if ("BLACK".equalsIgnoreCase(color)) {
+            if (game.blackUsername() != null) {
+                throw new Exception("Error: already taken");
+            }
+            db.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
+        } else {
+            throw new Exception("Error: bad request");
+        }
+    }
+
+
+
 
 }

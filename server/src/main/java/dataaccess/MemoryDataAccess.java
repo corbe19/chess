@@ -80,4 +80,16 @@ public class MemoryDataAccess implements DataAccess {
         return game;
     }
 
+    //<===== Join Game ======>
+    @Override
+    public GameData getGame(int gameID) {
+        return games.get(gameID);
+    }
+
+    @Override
+    public void updateGame(GameData updatedGame) {
+        //overwrite
+        games.put(updatedGame.gameID(), updatedGame);
+    }
+
 }
