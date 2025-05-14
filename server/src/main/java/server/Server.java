@@ -12,6 +12,8 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
+
+        //<============================== Clear Application ==============================>
         Spark.delete("/db", (req, res) -> {
                 try{
                     String response = new ClearHandler().handle();
@@ -25,6 +27,7 @@ public class Server {
         }
     });
 
+        //<============================== Register ==============================>
         Spark.post("/user", (req, res) -> {
             try {
                 String response = new RegisterHandler().handle(req.body());
@@ -45,6 +48,7 @@ public class Server {
             }
         });
 
+        //<============================== Login ==============================>
         Spark.post("/session", (req, res) -> {
            try {
                String response = new LoginHandler().handle(req.body());
@@ -65,6 +69,7 @@ public class Server {
            }
         });
 
+        //<============================== Logout ==============================>
         Spark.delete("/session", (req, res) -> {
             try {
                 String authToken = req.headers("authorization");
@@ -80,6 +85,25 @@ public class Server {
                 }
                 return new Gson().toJson(new ErrorResponse(message));
 
+            }
+        });
+
+        //<============================== List Games ==============================>
+        Spark.get("/game", (req, res) -> {
+            try {
+                String authToken = req.headers("authorization");
+                String response = new ListGamesHandler().handle(authToken);
+                res.status(200);
+                return response;
+            } catch (Exception e) {
+                String message = e.getMessage();
+                if (message.contains("unauthorized")) {
+                    res.status(401);
+                } else {
+                    res.status(500);
+                }
+
+                return new Gson().toJson(new ErrorResponse(message));
             }
         });
 

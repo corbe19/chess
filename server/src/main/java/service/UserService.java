@@ -54,6 +54,7 @@ public class UserService {
         return new LoginResult(user.username(), auth.authToken());
     }
 
+    //<========================= Logout =========================>
     public void logout(String authToken) throws Exception {
         AuthData auth = db.getAuth(authToken);
         if (auth == null) {
@@ -61,6 +62,18 @@ public class UserService {
         }
 
         db.deleteAuth(authToken);
+    }
+
+    //<========================= List Games =========================>
+
+    public ListGamesResult listGames(String authToken) throws Exception {
+        AuthData auth = db.getAuth(authToken);
+
+        if (auth == null) {
+            throw new Exception("Error: unauthorized");
+        }
+
+        return new ListGamesResult(db.getAllGames());
     }
 
 
