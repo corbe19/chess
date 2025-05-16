@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
+import dataaccess.DatabaseInit;
 import dataaccess.DatabaseManager;
 import service.ClearService;
 import spark.*;
@@ -19,8 +20,7 @@ public class Server {
 
         //configure db tables
         try {
-            DatabaseManager.createDatabase();
-            DatabaseManager.configureTables();
+            DatabaseInit.initialize();
         } catch (DataAccessException e){
             System.err.println("Database error: " + e.getMessage());
             System.exit(1); //almost forgot
