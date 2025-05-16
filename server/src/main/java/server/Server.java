@@ -1,6 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import service.ClearService;
 import spark.*;
 
@@ -14,6 +16,15 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         //run is way too long. break up endpoints into seperate functions
         registerEndpoints();
+
+        //configure db tables
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.configureTables();
+        } catch (DataAccessException e){
+            System.err.println("Database error: " + e.getMessage());
+            System.exit(1); //almost forgot
+        }
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
