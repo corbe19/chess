@@ -32,7 +32,7 @@ public class UserDAOTests {
     }
 
     @Test
-    void insertUserNegative() throws DataAccessException {
+    public void insertUserNegative() throws DataAccessException {
         var user = new UserData("duplicate", "password", "email@email.com");
         userDAO.insertUser(user);
 
@@ -41,13 +41,25 @@ public class UserDAOTests {
     }
 
 
-    /*
+
     @Test
     public void getUserPositive() throws DataAccessException {
         UserData testUser = new UserData("luke", "securepassword", "luke@byu.edu");
-        userDAO.insertUser(testUser); //uuuhhh this is awkward
+        userDAO.insertUser(testUser);
+
+        UserData response = userDAO.getUser("luke");
+
+        assertNotNull(response);
+        assertEquals(testUser.username(), response.username());
+        assertEquals(testUser.email(), response.email());
+        //I don't want to do the password
     }
-    */
+
+    @Test
+    public void getUserNegative() throws DataAccessException {
+        UserData response = userDAO.getUser("notindatabase");
+        assertNull(response);
+    }
 
 
 }
