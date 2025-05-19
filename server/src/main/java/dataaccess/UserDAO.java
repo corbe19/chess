@@ -12,7 +12,7 @@ public class UserDAO {
 
     //insert user
     public void insertUser(UserData user) throws DataAccessException {
-        var sql = "insert into user (username, password, email) values (?, ?, ?)";
+        var sql = "insert into users (username, password, email) values (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -25,13 +25,14 @@ public class UserDAO {
 
 
         } catch (SQLException e) {
+            System.err.println("SQL: " + e.getMessage());
             throw new DataAccessException("Error: Failed to insert user", e);
         }
     }
 
     //get user
     public UserData getUser(String username) throws DataAccessException {
-        var sql = "select username, password, email from user where username = ?";
+        var sql = "select username, password, email from users where username = ?";
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -51,7 +52,7 @@ public class UserDAO {
     //clear users
     public void clear() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement("delete from user")) {
+            PreparedStatement stmt = conn.prepareStatement("delete from users")) {
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Error: failed to clear users", e);
