@@ -19,6 +19,16 @@ public class UserDAOTests {
     }
 
     @Test
+    public void clearUsersPositive() throws DataAccessException {
+        UserData user = new UserData("test", "password", "email@email.com");
+        userDAO.insertUser(user);
+
+        userDAO.clear();
+
+        assertNull(userDAO.getUser("test"));
+    }
+
+    @Test
     public void insertUserPositive() throws DataAccessException {
         var user = new UserData("usernametest", "hashedpass", "test@test.com");
         userDAO.insertUser(user);
@@ -59,6 +69,22 @@ public class UserDAOTests {
     public void getUserNegative() throws DataAccessException {
         UserData response = userDAO.getUser("notindatabase");
         assertNull(response);
+    }
+
+    @Test
+    public void verifyPasswordPositive() throws DataAccessException {
+        UserData testUser = new UserData("test", "pass", "email@email.com");
+        userDAO.insertUser(testUser);
+
+        assertTrue(userDAO.verifyPassword("test", "pass"));
+    }
+
+    @Test
+    public void verifyPasswordNegative() throws DataAccessException {
+        UserData testUser = new UserData("test", "pass", "email@email.com");
+        userDAO.insertUser(testUser);
+
+        assertFalse(userDAO.verifyPassword("test", "wrongpassword"));
     }
 
 

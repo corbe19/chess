@@ -49,6 +49,17 @@ public class UserDAO {
     }
 
     //verify password
+    public boolean verifyPassword(String username, String password) throws DataAccessException {
+        UserData user = getUser(username);
+
+        if (user == null) {
+            return false;
+        } else {
+            return BCrypt.checkpw(password, user.password());
+        }
+    }
+
+
     //clear users
     public void clear() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
