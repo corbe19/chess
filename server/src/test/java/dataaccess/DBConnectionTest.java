@@ -1,5 +1,4 @@
-package service;
-import dataaccess.DatabaseManager;
+package dataaccess;
 
 public class DBConnectionTest {
     public static void main(String[] args) {
