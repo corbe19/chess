@@ -8,6 +8,9 @@ import java.util.Collection;
 
 public interface DataAccess {
     //<===== Clear =====>
+    void clearUsers() throws DataAccessException;
+    void clearGames() throws DataAccessException;
+    void clearAuths() throws DataAccessException;
 
     //<===== Register User =====>
     UserData getUser(String username);
