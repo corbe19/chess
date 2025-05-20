@@ -6,6 +6,7 @@ import dataaccess.UserDAO;
 import dataaccess.DataAccessException;
 import model.*;
 import chess.ChessGame;
+import server.ResponseException;
 
 
 import java.util.List;
@@ -37,14 +38,14 @@ public class UserService {
     }
 
     //<========================= Login =========================>
-    public LoginResult login(LoginRequest request) throws Exception {
+    public LoginResult login(LoginRequest request) throws ResponseException, DataAccessException {
         if (request.username() == null || request.password() == null) {
-            throw new Exception("Error: bad request");
+            throw new ResponseException(400, "Error: bad request");
         }
 
         UserData user = userDAO.getUser(request.username());
-        if (user == null || !userDAO.verifyPassword(request.username(), request.password())) { //have to check with hash!!!!!!!!
-            throw new Exception("Error: unauthorized");
+        if (user == null || !userDAO.verifyPassword(request.username(), request.password())) {
+            throw new ResponseException(401, "Error: unauthorized");
         }
 
         String token = UUID.randomUUID().toString();
@@ -55,10 +56,14 @@ public class UserService {
     }
 
     //<========================= Logout =========================>
-    public void logout(String authToken) throws Exception {
+    public void logout(String authToken) throws ResponseException, DataAccessException {
+        if (authToken == null || authToken.isBlank()) {
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+
         AuthData auth = authDAO.getAuth(authToken);
         if (auth == null) {
-            throw new Exception("Error: unauthorized");
+            throw new ResponseException(401, "Error: unauthorized");
         }
 
         authDAO.deleteAuth(authToken);

@@ -12,6 +12,12 @@ public class UserDAO {
 
     //insert user
     public void insertUser(UserData user) throws DataAccessException {
+        if (user.password() == null) {
+            System.out.println("Registering user with password: " + user.password());
+            throw new DataAccessException("Password cannot be null");
+        }
+
+
         var sql = "insert into users (username, password, email) values (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -62,10 +68,16 @@ public class UserDAO {
 
     //clear users
     public void clear() throws DataAccessException {
-        var sql = "delete from users";
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.executeUpdate();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            //let's just clear everything as well
+            try (PreparedStatement stmt1 = conn.prepareStatement("delete from games");
+                 PreparedStatement stmt2 = conn.prepareStatement("delete from auth");
+                 PreparedStatement stmt3 = conn.prepareStatement("delete from users")) {
+
+                stmt1.executeUpdate(); //games first
+                stmt2.executeUpdate();
+                stmt3.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new DataAccessException("Error: failed to clear users", e);
         }

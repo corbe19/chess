@@ -26,8 +26,8 @@ public class DatabaseInit {
             CREATE TABLE IF NOT EXISTS auth (
                 authToken VARCHAR(255) PRIMARY KEY,
                 username VARCHAR(255) NOT NULL,
-                FOREIGN KEY (username) REFERENCES users(username)
-            );
+                FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+                                                          );
         """);
 
             //<=============================== Games Table ===============================>
@@ -38,8 +38,8 @@ public class DatabaseInit {
                 blackUsername VARCHAR(255),
                 gameName VARCHAR(255),
                 game TEXT,
-                FOREIGN KEY (whiteUsername) REFERENCES users(username),
-                FOREIGN KEY (blackUsername) REFERENCES users(username)
+                FOREIGN KEY (whiteUsername) REFERENCES users(username) ON DELETE CASCADE,
+                FOREIGN KEY (blackUsername) REFERENCES users(username) ON DELETE CASCADE
             );
         """);
 

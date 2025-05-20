@@ -10,11 +10,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserDAOTests {
 
     private UserDAO userDAO;
+    private AuthDAO authDAO;
 
     @BeforeEach
     void setUp() throws DataAccessException {
         DatabaseInit.initialize();
         userDAO = new UserDAO();
+        authDAO = new AuthDAO();
+        authDAO.clear();
         userDAO.clear();
     }
 
