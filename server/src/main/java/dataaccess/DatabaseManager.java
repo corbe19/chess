@@ -46,6 +46,7 @@ public class DatabaseManager {
             //do not wrap the following line with a try-with-resources
             var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
             conn.setCatalog(databaseName);
+            conn.setAutoCommit(true); //I hope this doesnt break anything
             return conn;
         } catch (SQLException ex) {
             throw new DataAccessException("failed to get connection", ex);

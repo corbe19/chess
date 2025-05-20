@@ -62,8 +62,9 @@ public class UserDAO {
 
     //clear users
     public void clear() throws DataAccessException {
+        var sql = "delete from users";
         try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement("delete from users")) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Error: failed to clear users", e);
