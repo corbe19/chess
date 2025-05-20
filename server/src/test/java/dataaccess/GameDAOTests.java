@@ -70,14 +70,19 @@ public class GameDAOTests {
         int id = gameDAO.insertGame(new GameData(0, "whiteUser", "blackUser", "Update Test", new ChessGame()));
         ChessGame updated = new ChessGame();
         updated.setTeamTurn(ChessGame.TeamColor.BLACK);
-        gameDAO.updateGame(id, updated);
+
+        GameData updatedGame = new GameData(id, "whiteUser", "blackUser", "Update Test", updated);
+        gameDAO.updateGame(updatedGame);
+
         assertEquals(ChessGame.TeamColor.BLACK, gameDAO.getGame(id).game().getTeamTurn());
     }
 
     @Test
     public void updateGameNegative() {
         ChessGame game = new ChessGame();
-        assertThrows(DataAccessException.class, () -> gameDAO.updateGame(9999, game));
+        GameData badGame = new GameData(9999, "whiteUser", "blackUser", "Invalid Game", game);
+
+        assertThrows(DataAccessException.class, () -> gameDAO.updateGame(badGame));
     }
 
     @Test

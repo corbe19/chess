@@ -49,19 +49,12 @@ public class Server {
     }
 
     //<============================== Clear Application ==============================>
-    private void registerClear()
-
-    {
+    private void registerClear() {
         Spark.delete("/db", (req, res) -> {
             try {
-                String response = new ClearHandler().handle();
-                res.status(200);
-                return response;
+                return new ClearHandler().handle(req, res);
             } catch (Exception e) {
-                res.status(500);
-                return new Gson().toJson(new Object() {
-                    final String message = e.getMessage(); //Follow instructions lucas
-                });
+                return ExceptionUtil.handleException(e, res);
             }
         });
     }
@@ -150,6 +143,7 @@ public class Server {
     //add Exception function to get rid of duplicate code
     private String handleException(Exception e, Response res) {
         String message = e.getMessage();
+
         if (message.contains("bad request")) {
             res.status(400);
         } else if (message.contains("unauthorized")) {
@@ -158,6 +152,7 @@ public class Server {
             res.status(403);
         } else {
             res.status(500);
+            return new Gson().toJson(new ErrorResponse("Error: internal server error"));
         }
         return new Gson().toJson(new ErrorResponse(message));
     }

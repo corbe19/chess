@@ -94,13 +94,17 @@ public class GameDAO {
     }
 
     //update game
-    public void updateGame(int gameID, ChessGame updatedGame) throws DataAccessException {
-        String sql = "update games set game = ? where gameID = ?";
+    public void updateGame(GameData game) throws DataAccessException {
+        String sql = "update games set whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? where gameID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, gson.toJson(updatedGame));
-            stmt.setInt(2, gameID);
+            stmt.setString(1, game.whiteUsername());
+            stmt.setString(2, game.blackUsername());
+            stmt.setString(3, game.gameName());
+            stmt.setString(4, gson.toJson(game.game()));
+            stmt.setInt(5, game.gameID());
+
             int affected = stmt.executeUpdate();
             if (affected == 0) throw new DataAccessException("Error: game not found");
 

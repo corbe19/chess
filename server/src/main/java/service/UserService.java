@@ -1,38 +1,39 @@
 package service;
 
-import dataaccess.DataAccess;
-import dataaccess.MemoryDataAccess;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
+import dataaccess.DataAccessException;
 import model.*;
+import chess.ChessGame;
 
+
+import java.util.List;
 import java.util.UUID;
 
 public class UserService {
-    private final DataAccess db = MemoryDataAccess.getInstance();
+    private final UserDAO userDAO = new UserDAO();
+    private final AuthDAO authDAO = new AuthDAO();
+    private final GameDAO gameDAO = new GameDAO();
 
     //<========================= Register =========================>
     public RegisterResult register(RegisterRequest request) throws Exception {
-        //all fields must be filled out
         if (request.username() == null || request.password() == null || request.email() == null) {
             throw new Exception("Error: bad request");
         }
 
-        //username already exists
-        if (db.getUser(request.username()) != null) {
+        if (userDAO.getUser(request.username()) != null) {
             throw new Exception("Error: already taken");
         }
 
         UserData user = new UserData(request.username(), request.password(), request.email());
-        db.insertUser(user);
+        userDAO.insertUser(user);
 
-        //auth token?
         String token = UUID.randomUUID().toString();
         AuthData auth = new AuthData(token, user.username());
-
-        //insert dont forget
-        db.insertAuth(auth);
+        authDAO.insertAuth(auth);
 
         return new RegisterResult(user.username(), auth.authToken());
-
     }
 
     //<========================= Login =========================>
@@ -41,44 +42,43 @@ public class UserService {
             throw new Exception("Error: bad request");
         }
 
-        //yea it would make sense we need to store the username before finding it in the db
-        UserData user = db.getUser(request.username());
-        if (user == null || !user.password().equals(request.password())) {
+        UserData user = userDAO.getUser(request.username());
+        if (user == null || !userDAO.verifyPassword(request.username(), request.password())) { //have to check with hash!!!!!!!!
             throw new Exception("Error: unauthorized");
         }
 
         String token = UUID.randomUUID().toString();
         AuthData auth = new AuthData(token, user.username());
-        db.insertAuth(auth);
+        authDAO.insertAuth(auth);
 
         return new LoginResult(user.username(), auth.authToken());
     }
 
     //<========================= Logout =========================>
     public void logout(String authToken) throws Exception {
-        AuthData auth = db.getAuth(authToken);
+        AuthData auth = authDAO.getAuth(authToken);
         if (auth == null) {
             throw new Exception("Error: unauthorized");
         }
 
-        db.deleteAuth(authToken);
+        authDAO.deleteAuth(authToken);
     }
 
     //<========================= List Games =========================>
-
     public ListGamesResult listGames(String authToken) throws Exception {
-        AuthData auth = db.getAuth(authToken);
-
+        AuthData auth = authDAO.getAuth(authToken);
         if (auth == null) {
             throw new Exception("Error: unauthorized");
         }
 
-        return new ListGamesResult(db.getAllGames());
+        List<GameData> games = gameDAO.listAllGames();
+        return new ListGamesResult(games);
     }
 
     //<========================= Create Game =========================>
     public CreateGameResult createGame(String authToken, CreateGameRequest request) throws Exception {
-        if (authToken == null || db.getAuth(authToken) == null) {
+        AuthData auth = authDAO.getAuth(authToken);
+        if (auth == null) {
             throw new Exception("Error: unauthorized");
         }
 
@@ -86,18 +86,19 @@ public class UserService {
             throw new Exception("Error: bad request");
         }
 
-        GameData game = db.insertGame(request.gameName());
-        return new CreateGameResult(game.gameID());
+        GameData game = new GameData(0, null, null, request.gameName(), new ChessGame());
+        int gameID = gameDAO.insertGame(game);
+        return new CreateGameResult(gameID);
     }
 
     //<========================= Join Game =========================>
     public void joinGame(String authToken, JoinGameRequest request) throws Exception {
-        AuthData auth = db.getAuth(authToken);
+        AuthData auth = authDAO.getAuth(authToken);
         if (auth == null) {
             throw new Exception("Error: unauthorized");
         }
 
-        GameData game = db.getGame(request.gameID());
+        GameData game = gameDAO.getGame(request.gameID());
         if (game == null) {
             throw new Exception("Error: bad request");
         }
@@ -109,15 +110,34 @@ public class UserService {
             if (game.whiteUsername() != null) {
                 throw new Exception("Error: already taken");
             }
-            db.updateGame(new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game()));
+
+            GameData updatedGame = new GameData(
+                    game.gameID(),
+                    username,
+                    game.blackUsername(),
+                    game.gameName(),
+                    game.game()
+            );
+
+            gameDAO.updateGame(updatedGame);
+
         } else if ("BLACK".equalsIgnoreCase(color)) {
             if (game.blackUsername() != null) {
                 throw new Exception("Error: already taken");
             }
-            db.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
+
+            GameData updatedGame = new GameData(
+                    game.gameID(),
+                    game.whiteUsername(),
+                    username,
+                    game.gameName(),
+                    game.game()
+            );
+
+            gameDAO.updateGame(updatedGame);
+
         } else {
             throw new Exception("Error: bad request");
         }
     }
-
 }
