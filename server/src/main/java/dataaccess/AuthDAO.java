@@ -45,6 +45,16 @@ public class AuthDAO {
     }
 
     //delete auth
+    public void deleteAuth(String authToken) throws DataAccessException {
+        var sql = "delete from auth where authToken = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, authToken);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: failed to delete auth", e);
+        }
+    }
 
 
     //clear auths
