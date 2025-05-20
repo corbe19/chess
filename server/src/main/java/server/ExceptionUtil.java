@@ -5,7 +5,7 @@ import spark.Response;
 
 //I cant tell you why im making a while new class but this exception stuff is really annoying me
 public class ExceptionUtil {
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
     public static String handleException(Exception e, Response res) {
         String rawMessage = e.getMessage();

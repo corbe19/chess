@@ -33,7 +33,9 @@ public class GameDAO {
                 if (keys.next()) {
                     return keys.getInt(1);
                 }
-                else throw new DataAccessException("Failed to retrieve inserted gameID.");
+                else {
+                    throw new DataAccessException("Failed to retrieve inserted gameID.");
+                }
             }
 
         } catch (SQLException e) {
@@ -106,7 +108,9 @@ public class GameDAO {
             stmt.setInt(5, game.gameID());
 
             int affected = stmt.executeUpdate();
-            if (affected == 0) throw new DataAccessException("Error: game not found");
+            if (affected == 0) {
+                throw new DataAccessException("Error: game not found");
+            }
 
         } catch (SQLException e) {
             throw new DataAccessException("Error: failed to update game", e);
@@ -121,7 +125,9 @@ public class GameDAO {
 
             stmt.setInt(1, gameID);
             int affected = stmt.executeUpdate();
-            if (affected == 0) throw new DataAccessException("Error: game not found");
+            if (affected == 0) {
+                throw new DataAccessException("Error: game not found");
+            }
 
         } catch (SQLException e) {
             throw new DataAccessException("Error: failed to delete game", e);
