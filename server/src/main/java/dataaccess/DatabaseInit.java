@@ -30,7 +30,7 @@ public class DatabaseInit {
             );
         """);
 
-            //<=============================== Users Table ===============================>
+            //<=============================== Games Table ===============================>
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS games (
                 gameID INT PRIMARY KEY AUTO_INCREMENT,
