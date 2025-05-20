@@ -27,7 +27,7 @@ public class AuthDAO {
 
     //get auth
     public AuthData getAuth(String authToken) throws DataAccessException {
-        var sql = "select username from auth where authToken = ?";
+        var sql = "SELECT authToken, username FROM auth WHERE authToken = ?";
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
