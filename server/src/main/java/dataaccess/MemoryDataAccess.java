@@ -20,20 +20,7 @@ public class MemoryDataAccess implements DataAccess {
     private final Map<String, AuthData> auths = new HashMap<>();
 
     //<===== Clear =====>
-    @Override
-    public void clearUsers() {
-        users.clear();
-    }
 
-    @Override
-    public void clearGames() {
-        games.clear();
-    }
-
-    @Override
-    public void clearAuths() {
-        auths.clear();
-    }
 
     //<===== Register User =====>
     @Override
