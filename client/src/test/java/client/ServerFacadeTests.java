@@ -97,4 +97,25 @@ public class ServerFacadeTests {
 
         assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
     }
+
+    @Test
+    public void logoutPositive() throws Exception {
+        RegisterRequest request = new RegisterRequest("logout", "correct", "email@email.com");
+        AuthData auth = facade.register(request.username(), request.password(), request.email());
+
+        assertDoesNotThrow(() -> {
+            facade.logout(auth);
+        });
+    }
+
+    @Test
+    public void logoutNegative() throws Exception {
+        AuthData auth = new AuthData("fake", "token");
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            facade.logout(auth);
+        });
+
+        assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
+    }
 }

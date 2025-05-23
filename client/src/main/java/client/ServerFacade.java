@@ -70,14 +70,18 @@ public class ServerFacade {
         return makeRequest("/user", "POST", request, AuthData.class, null);
     }
 
+    //login
+
     public AuthData login(String username, String password) throws IOException {
         var request = new LoginRequest(username, password);
         return makeRequest("/session", "POST", request, AuthData.class, null);
     }
 
-
-    //login
     //logout
+    public void logout(AuthData auth) throws IOException {
+        makeRequest("/session", "DELETE", null, Void.class, auth.authToken());
+    }
+
     //createGame
     //listGames
     //joinGame
