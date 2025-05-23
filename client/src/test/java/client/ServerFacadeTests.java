@@ -118,4 +118,23 @@ public class ServerFacadeTests {
 
         assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
     }
+
+    @Test
+    public void createGamePositive() throws Exception {
+        AuthData auth = facade.register("create", "pass", "email@email.com");
+
+        assertDoesNotThrow(() -> {
+            facade.createGame(auth, "Game 1");
+        });
+    }
+
+    @Test void createGameNegative() throws Exception {
+        AuthData auth = new AuthData("fakefake", null); //fake auth
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            facade.createGame(auth, "fake");
+        });
+
+        assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
+    }
 }

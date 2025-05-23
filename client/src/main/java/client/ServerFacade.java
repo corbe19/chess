@@ -1,9 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
-import model.AuthData;
-import model.LoginRequest;
-import model.RegisterRequest;
+import model.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -83,6 +81,11 @@ public class ServerFacade {
     }
 
     //createGame
+    public void createGame(AuthData auth, String gameName) throws IOException {
+        var request = new CreateGameRequest(gameName);
+        makeRequest("/game", "POST", request, CreateGameResult.class, auth.authToken());
+    }
+
     //listGames
     //joinGame
     //
