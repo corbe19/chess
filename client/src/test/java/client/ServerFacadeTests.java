@@ -5,12 +5,16 @@ import model.RegisterRequest;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
 
     private static Server server;
+    ServerFacade facade = new ServerFacade("http://localhost:8080"); //initialize facade
+
 
     @BeforeAll
     public static void init() {
@@ -26,9 +30,7 @@ public class ServerFacadeTests {
 
     //i hope this works?
     @Test
-    public void testMakeRequestPositive() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
-
+    public void makeRequestPositive() throws Exception {
         RegisterRequest request = new RegisterRequest("user", "pass", "email@email.com");
 
         AuthData response = facade.makeRequest(
@@ -44,9 +46,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testMakeRequestNegative() {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
-
+    public void makeRequestNegative() {
         Exception exception = assertThrows(Exception.class, () -> {
             facade.makeRequest("/nonexistent", "GET", null, Void.class, null);
         });
@@ -56,9 +56,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testRegisterPositive() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
-
+    public void registerPositive() throws Exception {
         RegisterRequest request = new RegisterRequest("testUser", "pass", "email@email.com");
         AuthData result = facade.makeRequest("/user", "POST", request, AuthData.class, null);
         assertNotNull(result);
@@ -67,13 +65,36 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testRegisterNegative() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
-
+    public void registerNegative() throws Exception {
         RegisterRequest request = new RegisterRequest(null, "pass", "email@email.com"); //null username
         Exception exception = assertThrows(Exception.class, () -> {
             facade.makeRequest("/user", "POST", request, AuthData.class, null);
         });
         assertTrue(exception.getMessage().contains("400") || exception.getMessage().toLowerCase().contains("bad"));
+    }
+
+    @Test
+    public void loginPositive() throws Exception {
+        RegisterRequest request = new RegisterRequest("login", "pass", "email@email.com");
+        facade.register(request.username(), request.password(), request.email());
+
+        AuthData result = facade.login(request.username(), request.password());
+
+        assertNotNull(result);
+        assertEquals(result.username(), result.username());
+        assertNotNull(result.authToken());
+        assertTrue(result.authToken().length() > 10); //placeholder?
+    }
+
+    @Test
+    public void loginNegative() throws Exception {
+        RegisterRequest request = new RegisterRequest("wrongpass", "correct", "email@email.com");
+        facade.register(request.username(), request.password(), request.email());
+
+        Exception exception = assertThrows(IOException.class, () ->  {
+            facade.login(request.username(), "wrong"); //wrong password
+        });
+
+        assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
     }
 }

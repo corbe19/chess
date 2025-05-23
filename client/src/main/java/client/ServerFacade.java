@@ -2,6 +2,7 @@ package client;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.LoginRequest;
 import model.RegisterRequest;
 
 import java.io.*;
@@ -67,6 +68,11 @@ public class ServerFacade {
     public AuthData register(String username, String password, String email) throws IOException {
         var request = new RegisterRequest(username, password, email);
         return makeRequest("/user", "POST", request, AuthData.class, null);
+    }
+
+    public AuthData login(String username, String password) throws IOException {
+        var request = new LoginRequest(username, password);
+        return makeRequest("/session", "POST", request, AuthData.class, null);
     }
 
 
