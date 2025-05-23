@@ -1,6 +1,8 @@
 package client;
 
 import com.google.gson.Gson;
+import model.AuthData;
+import model.RegisterRequest;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -62,6 +64,12 @@ public class ServerFacade {
     }
 
     //register
+    public AuthData register(String username, String password, String email) throws IOException {
+        var request = new RegisterRequest(username, password, email);
+        return makeRequest("/user", "POST", request, AuthData.class, null);
+    }
+
+
     //login
     //logout
     //createGame

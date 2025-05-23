@@ -55,4 +55,25 @@ public class ServerFacadeTests {
         assertTrue(message.contains("404") || message.contains("not found"));
     }
 
+    @Test
+    public void testRegisterPositive() throws Exception {
+        ServerFacade facade = new ServerFacade("http://localhost:8080");
+
+        RegisterRequest request = new RegisterRequest("testUser", "pass", "email@email.com");
+        AuthData result = facade.makeRequest("/user", "POST", request, AuthData.class, null);
+        assertNotNull(result);
+        assertNotNull(result.authToken());
+        assertEquals("testUser", result.username());
+    }
+
+    @Test
+    public void testRegisterNegative() throws Exception {
+        ServerFacade facade = new ServerFacade("http://localhost:8080");
+
+        RegisterRequest request = new RegisterRequest(null, "pass", "email@email.com"); //null username
+        Exception exception = assertThrows(Exception.class, () -> {
+            facade.makeRequest("/user", "POST", request, AuthData.class, null);
+        });
+        assertTrue(exception.getMessage().contains("400") || exception.getMessage().toLowerCase().contains("bad"));
+    }
 }
