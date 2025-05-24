@@ -1,6 +1,7 @@
 package client;
 
 import model.AuthData;
+import model.ListGamesResult;
 import model.RegisterRequest;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -128,11 +129,35 @@ public class ServerFacadeTests {
         });
     }
 
-    @Test void createGameNegative() throws Exception {
+    @Test
+    public void createGameNegative() throws Exception {
         AuthData auth = new AuthData("fakefake", null); //fake auth
 
         Exception exception = assertThrows(IOException.class, () -> {
             facade.createGame(auth, "fake");
+        });
+
+        assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
+    }
+
+    @Test
+    public void listGamesPositive() throws Exception {
+        AuthData auth = facade.register("listGameUser", "pass", "user@email.com");
+        facade.createGame(auth, "Game 1");
+        facade.createGame(auth, "Game 2");
+
+        ListGamesResult games = facade.listGames(auth);
+
+        assertNotNull(games);
+        assertTrue(games.games().size() >= 2);
+    }
+
+    @Test
+    public void listGamesNegative() {
+        AuthData fakeAuth = new AuthData("imposter", "invalid-token");
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            facade.listGames(fakeAuth);
         });
 
         assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));

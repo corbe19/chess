@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -87,6 +88,10 @@ public class ServerFacade {
     }
 
     //listGames
+    public ListGamesResult listGames(AuthData auth) throws IOException {
+        return makeRequest("/game", "GET", null, ListGamesResult.class, auth.authToken());
+    }
+
     //joinGame
     //
 
