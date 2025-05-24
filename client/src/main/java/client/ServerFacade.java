@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -97,5 +96,4 @@ public class ServerFacade {
         JoinGameRequest request = new JoinGameRequest(color, gameID);
         makeRequest("/game", "PUT", request, Void.class, auth.authToken());
     }
-
 }
