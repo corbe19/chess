@@ -1,12 +1,15 @@
 package client;
 
 import model.AuthData;
+import model.GameData;
 import model.ListGamesResult;
 import model.RegisterRequest;
 import org.junit.jupiter.api.*;
 import server.Server;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -154,12 +157,38 @@ public class ServerFacadeTests {
 
     @Test
     public void listGamesNegative() {
-        AuthData fakeAuth = new AuthData("imposter", "invalid-token");
+        AuthData fakeAuth = new AuthData("imposter", "token");
 
         Exception exception = assertThrows(IOException.class, () -> {
             facade.listGames(fakeAuth);
         });
 
         assertTrue(exception.getMessage().contains("401") || exception.getMessage().toLowerCase().contains("unauthorized"));
+    }
+
+    @Test
+    public void joinGamePositive() throws Exception {
+        AuthData auth = facade.register("joinGameUser", "pass", "user@email.com");
+        facade.createGame(auth, "GameTime");
+        ListGamesResult games = facade.listGames(auth);
+
+        List<GameData> gameList = new ArrayList<>(games.games());
+        int gameID = gameList.get(gameList.size() - 1).gameID();
+
+        assertDoesNotThrow(() -> {
+            facade.joinGame(auth, gameID, "WHITE");
+        });
+    }
+
+    @Test
+    public void joinGameNegative() throws Exception {
+        AuthData auth = facade.register("joinBad", "pass", "user@email.com");
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            facade.joinGame(auth, 999999, "WHITE");
+        });
+
+        assertTrue(exception.getMessage().contains("Error: status ") || exception.getMessage().toLowerCase().contains("not found"));
+
     }
 }

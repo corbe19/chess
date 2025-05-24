@@ -93,6 +93,9 @@ public class ServerFacade {
     }
 
     //joinGame
-    //
+    public void joinGame(AuthData auth, int gameID, String color) throws IOException {
+        JoinGameRequest request = new JoinGameRequest(color, gameID);
+        makeRequest("/game", "PUT", request, Void.class, auth.authToken());
+    }
 
 }
