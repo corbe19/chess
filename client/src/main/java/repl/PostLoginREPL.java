@@ -29,6 +29,10 @@ public class PostLoginREPL {
                         client.create(tokens, auth);
                         yield auth;
                     }
+                    case "list" -> {
+                        client.list(auth);
+                        yield auth;
+                    }
                     default -> {
                         System.out.println("Unkown command: Type 'help' for options.");
                         yield auth;

@@ -2,6 +2,7 @@ package client;
 
 import model.AuthData;
 import model.GameData;
+import model.ListGamesResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,5 +32,20 @@ public class PostLoginClient {
         server.createGame(auth, tokens[1]);
         System.out.println("Game created!");
     }
+
+    public void list(AuthData auth) throws Exception {
+        ListGamesResult result = server.listGames(auth);
+        lastGameList = new ArrayList<>(result.games());
+
+        int i = 1;
+        for (GameData game : lastGameList) {
+            System.out.printf("%d. %s (White: %s, Black: %s)%n" , //should format: "1. Game A (White: billy, Black: bob)"
+                    i++, game.gameName(),
+                    game.whiteUsername() != null ? game.whiteUsername() : "[None]",
+                    game.blackUsername() != null ? game.blackUsername() : "[None]");
+        }
+    }
+
+
 
 }
