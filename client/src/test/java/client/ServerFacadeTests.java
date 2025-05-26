@@ -191,4 +191,34 @@ public class ServerFacadeTests {
         assertTrue(exception.getMessage().contains("Error: status ") || exception.getMessage().toLowerCase().contains("not found"));
 
     }
+
+    @Test
+    public void observeGamePositive() throws Exception {
+        AuthData creator = facade.register("host", "password", "host@email.com");
+        facade.createGame(creator, "observe");
+
+        ListGamesResult result = facade.listGames(creator);
+        int gameID = result.games().stream()
+                .filter(game -> game.gameName().equals("observe"))
+                .findFirst()
+                .orElseThrow()
+                .gameID();
+
+        AuthData observer = facade.register("spectator", "password", "spec@email.com");
+
+        assertDoesNotThrow(() -> facade.joinGame(observer, gameID, null));
+    }
+
+    @Test
+    public void observeGameNegative() throws Exception {
+        AuthData observer = facade.register("spectator2", "password", "spec2@email.com");
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            facade.joinGame(observer, 999999, null);
+        });
+
+        assertTrue(exception.getMessage().contains("bad request") || exception.getMessage().toLowerCase().contains("not found")
+                || exception.getMessage().toLowerCase().contains("400"));
+
+    }
 }
