@@ -37,6 +37,10 @@ public class PostLoginREPL {
                         client.join(tokens, auth);
                         yield auth;
                     }
+                    case "observe" -> {
+                        client.observe(tokens, auth);
+                        yield auth;
+                    }
                     default -> {
                         System.out.println("Unknown command: Type 'help' for options.");
                         yield auth;

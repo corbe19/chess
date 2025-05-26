@@ -67,6 +67,21 @@ public class PostLoginClient {
         System.out.println("Joined game " + " as " + color);
     }
 
+    public void observe(String[] tokens, AuthData auth) throws Exception {
+        if (tokens.length != 2) {
+            throw new IllegalArgumentException("Usage: observe <NUMBER>");
+        }
+
+        int index = Integer.parseInt(tokens[1]);
+        if (index < 1 || index > lastGameList.size()) {
+            throw new IllegalArgumentException("Invalid game number. Try 'list' to view games");
+        }
+
+        int gameID = lastGameList.get(index - 1).gameID();
+        server.joinGame(auth, gameID, null); //no color makes observer?
+        System.out.println("Observing game " + gameID);
+    }
+
 
 
 }
