@@ -3,7 +3,9 @@ package client;
 import model.AuthData;
 import model.GameData;
 import model.ListGamesResult;
+import ui.EscapeSequences;
 
+import java.io.IOException;
 import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +19,26 @@ public class PostLoginClient {
     }
 
     public void help() {
-        System.out.println(" create <NAME> - a game");
-        System.out.println(" list - games");
-        System.out.println(" join <ID> [WHITE|BLACK] - a game");
-        System.out.println(" observe <ID> - a game");
-        System.out.println(" logout - when you are done");
-        System.out.println(" quit - playing chess");
-        System.out.println(" help - with possible commands");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + " create <NAME>"
+                + EscapeSequences.RESET_TEXT_COLOR + " - a game");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " list"
+                + EscapeSequences.RESET_TEXT_COLOR + " - games");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " join <ID> [WHITE|BLACK]"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - a game");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " observe <ID>"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - a game");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " logout"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - when you are done");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " quit"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - playing chess");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " help"
+                + EscapeSequences.RESET_TEXT_COLOR + " - with possible commands");
     }
 
     public void create(String[] tokens, AuthData auth) throws Exception {
@@ -31,25 +46,43 @@ public class PostLoginClient {
             throw new IllegalArgumentException("Usage: create <NAME>");
         }
         server.createGame(auth, tokens[1]);
-        System.out.println("Game created!");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Game created!");
     }
 
     public void list(AuthData auth) throws Exception {
         ListGamesResult result = server.listGames(auth);
         lastGameList = new ArrayList<>(result.games());
 
+        if (lastGameList.isEmpty()) {
+            System.out.println("No games in progress. Type 'create' to start a new game!");
+        }
+
         int i = 1;
         for (GameData game : lastGameList) {
-            System.out.printf("%d. %s (White: %s, Black: %s)%n" , //should format: "1. Game A (White: billy, Black: bob)"
-                    i++, game.gameName(),
-                    game.whiteUsername() != null ? game.whiteUsername() : "[None]",
-                    game.blackUsername() != null ? game.blackUsername() : "[None]");
+            String white = game.whiteUsername() != null
+                    ? EscapeSequences.SET_TEXT_BOLD + game.whiteUsername() + EscapeSequences.RESET_TEXT_BOLD_FAINT
+                    : EscapeSequences.SET_TEXT_COLOR_YELLOW + "[Open]" + EscapeSequences.RESET_TEXT_COLOR;
+
+            String black = game.blackUsername() != null
+                    ? EscapeSequences.SET_TEXT_BOLD + game.blackUsername() + EscapeSequences.RESET_TEXT_BOLD_FAINT
+                    : EscapeSequences.SET_TEXT_COLOR_YELLOW + "[Open]" + EscapeSequences.RESET_TEXT_COLOR;
+
+            System.out.printf("%s%d.%s %s (White: %s, Black: %s)%n",
+                    EscapeSequences.SET_TEXT_COLOR_BLUE, i++,
+                    EscapeSequences.RESET_TEXT_COLOR, game.gameName(),
+                    white,
+                    black);
         }
     }
 
     public void join(String[] tokens, AuthData auth) throws Exception {
         if (tokens.length != 3) {
             throw new IllegalArgumentException("Usage: join <NUMBER> [WHITE|BLACK]");
+        }
+
+        if (!tokens[1].matches("\\d+")) {
+            throw new IllegalArgumentException("Game number must be a valid integer."
+                    + "\n       Usage: join <NUMBER> [WHITE|BLACK]");
         }
 
         int index = Integer.parseInt(tokens[1]);
@@ -60,28 +93,43 @@ public class PostLoginClient {
         int gameID = lastGameList.get(index - 1).gameID();
         String color = tokens[2].toUpperCase();
         if (!color.equals("WHITE") && !color.equals("BLACK")) {
-            throw new IllegalArgumentException("Color must be WHITE or BLACK");
+            throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_RED + "Color must be " +
+                    EscapeSequences.SET_TEXT_BOLD + "'WHITE'" +
+                    EscapeSequences.RESET_TEXT_BOLD_FAINT + " or " +
+                    EscapeSequences.SET_TEXT_BOLD + "'BLACK'" +
+                    EscapeSequences.RESET_TEXT_BOLD_FAINT);
         }
-
-        server.joinGame(auth, gameID, color);
-        System.out.println("Joined game " + " as " + color);
+        try {
+            server.joinGame(auth, gameID, color);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Joined game " + gameID + " as " +
+                    EscapeSequences.SET_TEXT_BOLD + color + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+        } catch (IOException e) {
+            if (e.getMessage().contains("already taken")) {
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Color is already taken.");
+            } else {
+                throw e;
+            }
+        }
     }
 
     public void observe(String[] tokens, AuthData auth) throws Exception {
         if (tokens.length != 2) {
-            throw new IllegalArgumentException("Usage: observe <NUMBER>");
+            throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Usage: observe <NUMBER>");
         }
 
         int index = Integer.parseInt(tokens[1]);
         if (index < 1 || index > lastGameList.size()) {
-            throw new IllegalArgumentException("Invalid game number. Try 'list' to view games");
+            throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_RED + "Invalid game number. Try 'list' to view games");
         }
 
         int gameID = lastGameList.get(index - 1).gameID();
         server.joinGame(auth, gameID, null); //no color makes observer?
-        System.out.println("Observing game " + gameID);
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game " +
+                EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT);
     }
 
-
-
+    public void logout(AuthData auth) throws Exception {
+        server.logout(auth);
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Logged out." + EscapeSequences.RESET_TEXT_COLOR);
+    }
 }

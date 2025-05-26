@@ -3,6 +3,7 @@ package repl;
 import client.PreLoginClient;
 import client.ServerFacade;
 import model.AuthData;
+import ui.EscapeSequences;
 
 import java.util.Scanner;
 
@@ -19,7 +20,7 @@ public class PreLoginREPL {
 
     public AuthData run() {
         while (true) {
-            System.out.print("[LOGGED_OUT] >>> ");
+            System.out.print(EscapeSequences.RESET_TEXT_COLOR + "[LOGGED_OUT] >>> ");
             String[] tokens = scanner.nextLine().trim().split("\\s+");
 
             //commands
@@ -27,12 +28,19 @@ public class PreLoginREPL {
                 return switch (tokens[0].toLowerCase()) {
                     case "register" -> client.register(tokens);
                     case "login" -> client.login(tokens);
-                    case "help" -> { client.help(); yield null; } //weirdo cant be void?
-                    case "quit" -> { System.exit(0); yield  null; } //also weirdo
-                    default -> { System.out.println("Unknown command."); yield null; } //triple crown weirdo
+                    case "help" -> { client.help();yield null; }
+                    case "quit" -> { System.exit(0); yield  null; }
+                    //post login commands
+                    case "create" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to create a game."); yield null; }
+                    case "observe" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to observe a game."); yield null; }
+                    case "join" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to join a game."); yield null; }
+                    case "list" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to see games in progress."); yield null; }
+
+                    default -> { System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Unknown command. Type 'help' for options."); yield null; }
                 };
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: "
+                        + EscapeSequences.SET_TEXT_COLOR_YELLOW + e.getMessage());
             }
 
         }

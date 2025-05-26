@@ -2,6 +2,7 @@ package repl;
 
 import client.PostLoginClient;
 import model.AuthData;
+import ui.EscapeSequences;
 
 import java.util.Scanner;
 
@@ -16,7 +17,9 @@ public class PostLoginREPL {
 
     public AuthData run(AuthData auth) {
         while (true) {
-            System.out.print("[LOGGED_IN] >>> ");
+            System.out.print(EscapeSequences.ERASE_SCREEN);
+            System.out.flush();
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_GREEN + "[LOGGED_IN] >>> " + EscapeSequences.RESET_TEXT_COLOR);
             String[] tokens = scanner.nextLine().trim().split("\\s+");
 
             try {
@@ -41,13 +44,27 @@ public class PostLoginREPL {
                         client.observe(tokens, auth);
                         yield auth;
                     }
+                    case "logout" -> {
+                        client.logout(auth);
+                        yield null;
+                    }
+                    case "quit" -> {
+                        System.exit(0);
+                        yield null;
+                    }
+
+                    //pre login commands
+                    case "login" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You are already logged in."); yield auth; }
+                    case "register" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must logout to register."); yield auth; }
+
                     default -> {
-                        System.out.println("Unknown command: Type 'help' for options.");
+                        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Unknown command: Type 'help' for options.");
                         yield auth;
                     }
                 };
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: "+
+                        EscapeSequences.SET_TEXT_COLOR_YELLOW + e.getMessage());
             }
         }
     }

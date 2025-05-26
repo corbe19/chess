@@ -1,6 +1,7 @@
 package client;
 
 import model.AuthData;
+import ui.EscapeSequences;
 
 //register, login, help
 public class PreLoginClient {
@@ -25,9 +26,16 @@ public class PreLoginClient {
     }
 
     public void help() {
-        System.out.println(" register <USERNAME> <PASSWORD> <EMAIL> - to create an account");
-        System.out.println(" login <USERNAME> <PASSWORD> - to play chess");
-        System.out.println(" quit - playing chess");
-        System.out.println(" help - with possible commands");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + " register <USERNAME> <PASSWORD> <EMAIL> "
+                + EscapeSequences.RESET_TEXT_COLOR + " - to create an account");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + " login <USERNAME> <PASSWORD>"
+                + EscapeSequences.RESET_TEXT_COLOR + " - to play chess");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  " quit"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - playing chess");
+
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + " help"
+                + EscapeSequences.RESET_TEXT_COLOR + " - with possible commands");
     }
 }

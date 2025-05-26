@@ -15,7 +15,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         PreLoginREPL prelogin = new PreLoginREPL(scanner, server);
-        //PostLoginREPL postlogin = new PostLoginREPL(scanner, server);
+        PostLoginREPL postlogin = new PostLoginREPL(scanner, server);
 
         AuthData auth = null;
 
@@ -23,8 +23,7 @@ public class Main {
             if (auth == null) {
                 auth = prelogin.run();
             } else {
-                //auth = postlogin.run(auth);
-                return;
+                auth = postlogin.run(auth);
             }
         }
     }
