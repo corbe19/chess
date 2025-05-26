@@ -93,7 +93,8 @@ public class ServerFacade {
 
     //joinGame
     public void joinGame(AuthData auth, int gameID, String color) throws IOException {
-        JoinGameRequest request = new JoinGameRequest(color, gameID);
+        String joinColor = (color == null) ? "null" : color; //observer
+        JoinGameRequest request = new JoinGameRequest(joinColor, gameID);
         makeRequest("/game", "PUT", request, Void.class, auth.authToken());
     }
 }

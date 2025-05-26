@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.ListGamesResult;
@@ -47,6 +49,9 @@ public class PostLoginClient {
         }
         server.createGame(auth, tokens[1]);
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Game created!");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Would you like to join this game?"
+                + EscapeSequences.SET_TEXT_COLOR_YELLOW + "\nType: join <number> WHITE/BLACK"
+                + EscapeSequences.RESET_TEXT_COLOR);
     }
 
     public void list(AuthData auth) throws Exception {
@@ -102,7 +107,16 @@ public class PostLoginClient {
         try {
             server.joinGame(auth, gameID, color);
             System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Joined game " + gameID + " as " +
-                    EscapeSequences.SET_TEXT_BOLD + color + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+                    EscapeSequences.SET_TEXT_BOLD + color + EscapeSequences.RESET_TEXT_BOLD_FAINT + EscapeSequences.RESET_TEXT_COLOR);
+
+            //draw board on join
+            ChessBoard board = new ChessGame().getBoard(); //REPLACE WITH REAL GAME STATE LATER
+            ChessGame.TeamColor perspective = color.equals("WHITE")
+                    ? ChessGame.TeamColor.WHITE
+                    : ChessGame.TeamColor.BLACK;
+            ui.BoardPrinter.draw(board, perspective);
+
+
         } catch (IOException e) {
             if (e.getMessage().contains("already taken")) {
                 System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Color is already taken.");
@@ -117,15 +131,29 @@ public class PostLoginClient {
             throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Usage: observe <NUMBER>");
         }
 
+        if (!tokens[1].matches("\\d+")) {
+            throw new IllegalArgumentException("Game number must be a valid integer."
+                    + "\n       Usage: observe <NUMBER>");
+        }
+
         int index = Integer.parseInt(tokens[1]);
         if (index < 1 || index > lastGameList.size()) {
             throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_RED + "Invalid game number. Try 'list' to view games");
         }
 
         int gameID = lastGameList.get(index - 1).gameID();
-        server.joinGame(auth, gameID, null); //no color makes observer?
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game " +
-                EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+        try {
+            server.joinGame(auth, gameID, null); // no color = observer
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game " +
+                    EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+
+            //draw board from white perspective
+            ChessBoard board = new ChessGame().getBoard(); //REPLACE WITH REAL GAME STATE LATER
+            ui.BoardPrinter.draw(board, ChessGame.TeamColor.WHITE);
+
+        } catch (IOException e) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Could not observe game: " + e.getMessage());
+        }
     }
 
     public void logout(AuthData auth) throws Exception {
