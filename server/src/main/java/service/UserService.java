@@ -140,9 +140,11 @@ public class UserService {
             );
 
             gameDAO.updateGame(updatedGame);
+
         //observer
         } else if ("null".equalsIgnoreCase(color)) {
             return;
+
         } else {
             throw new Exception("Error: bad request");
         }

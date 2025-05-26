@@ -44,7 +44,8 @@ public class BoardPrinter {
     }
 
     private static void printSquare(ChessBoard board, int row, int col) {
-        boolean isLight = (row + col) % 2 == 0;
+        //Per official chess rules, the bottom-right and top-left squares (h1 and a8) must be the "lighter" color.
+        boolean isLight = (row + col) % 2 != 0;
         String bg = isLight ? LIGHT : DARK;
 
         ChessPiece piece = board.getPiece(new ChessPosition(row, col));

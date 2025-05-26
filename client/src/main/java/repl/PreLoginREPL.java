@@ -35,6 +35,8 @@ public class PreLoginREPL {
                     case "observe" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to observe a game."); yield null; }
                     case "join" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to join a game."); yield null; }
                     case "list" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must login to see games in progress."); yield null; }
+                    case "logout" -> {System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "You must be logged in to logout."); yield null; }
+
 
                     default -> { System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Unknown command. Type 'help' for options."); yield null; }
                 };

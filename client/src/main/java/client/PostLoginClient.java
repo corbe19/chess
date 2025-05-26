@@ -144,8 +144,9 @@ public class PostLoginClient {
         int gameID = lastGameList.get(index - 1).gameID();
         try {
             server.joinGame(auth, gameID, null); // no color = observer
-            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game " +
-                    EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game: " +
+                    EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT
+                    + EscapeSequences.RESET_TEXT_COLOR);
 
             //draw board from white perspective
             ChessBoard board = new ChessGame().getBoard(); //REPLACE WITH REAL GAME STATE LATER
