@@ -33,8 +33,12 @@ public class PostLoginREPL {
                         client.list(auth);
                         yield auth;
                     }
+                    case "join" -> {
+                        client.join(tokens, auth);
+                        yield auth;
+                    }
                     default -> {
-                        System.out.println("Unkown command: Type 'help' for options.");
+                        System.out.println("Unknown command: Type 'help' for options.");
                         yield auth;
                     }
                 };

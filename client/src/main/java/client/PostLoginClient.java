@@ -4,6 +4,7 @@ import model.AuthData;
 import model.GameData;
 import model.ListGamesResult;
 
+import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,26 @@ public class PostLoginClient {
                     game.whiteUsername() != null ? game.whiteUsername() : "[None]",
                     game.blackUsername() != null ? game.blackUsername() : "[None]");
         }
+    }
+
+    public void join(String[] tokens, AuthData auth) throws Exception {
+        if (tokens.length != 3) {
+            throw new IllegalArgumentException("Usage: join <NUMBER> [WHITE|BLACK]");
+        }
+
+        int index = Integer.parseInt(tokens[1]);
+        if (index < 1 || index > lastGameList.size()) {
+            throw new IllegalArgumentException("Invalid game number. Try 'list' to view games");
+        }
+
+        int gameID = lastGameList.get(index - 1).gameID();
+        String color = tokens[2].toUpperCase();
+        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+            throw new IllegalArgumentException("Color must be WHITE or BLACK");
+        }
+
+        server.joinGame(auth, gameID, color);
+        System.out.println("Joined game " + " as " + color);
     }
 
 
