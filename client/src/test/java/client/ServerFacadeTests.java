@@ -17,14 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServerFacadeTests {
 
     private static Server server;
-    ServerFacade facade = new ServerFacade("http://localhost:8080"); //initialize facade
-
+    private static ServerFacade facade;
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(8080);
-        System.out.println("Started test HTTP server on " + port);
+        int port = server.run(0); //
+        facade = new ServerFacade("http://localhost:" + port);
+        System.out.println("Started test HTTP server on port: " + port);
     }
 
     @AfterAll
