@@ -15,11 +15,15 @@ public class PreLoginClient {
 
     public AuthData register(String[] tokens) throws Exception {
         if (tokens.length != 4) {
-            throw new IllegalArgumentException("Usage: register <USERNAME> <PASSWORD <EMAIL>>");
+            throw new IllegalArgumentException("Usage: register <USERNAME> <PASSWORD <EMAIL>");
         }
 
         try {
-            return server.register(tokens[1], tokens[2], tokens[3]);
+            AuthData auth =  server.register(tokens[1], tokens[2], tokens[3]);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN +
+                    "You are logged in as " + EscapeSequences.SET_TEXT_BOLD + auth.username() +
+                    EscapeSequences.RESET_TEXT_COLOR + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+            return auth;
         } catch (IOException e) {
             if (e.getMessage().contains("already taken")) {
                 System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Username already taken."
@@ -37,7 +41,11 @@ public class PreLoginClient {
         }
 
         try {
-            return server.login(tokens[1], tokens[2]);
+            AuthData auth =  server.login(tokens[1], tokens[2]);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN +
+                    "You are logged in as " + EscapeSequences.SET_TEXT_BOLD + auth.username() +
+                    EscapeSequences.RESET_TEXT_COLOR + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+            return auth;
         } catch (IOException e) {
             String msg = e.getMessage().toLowerCase();
 

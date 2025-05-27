@@ -49,8 +49,8 @@ public class PostLoginClient {
         }
         server.createGame(auth, tokens[1]);
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Game created!");
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Would you like to join this game?"
-                + EscapeSequences.SET_TEXT_COLOR_YELLOW + "\nType: join <number> WHITE/BLACK"
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE
+                + "Would you like to join this game? Type: join <number> WHITE/BLACK"
                 + EscapeSequences.RESET_TEXT_COLOR);
     }
 
@@ -59,7 +59,8 @@ public class PostLoginClient {
         lastGameList = new ArrayList<>(result.games());
 
         if (lastGameList.isEmpty()) {
-            System.out.println("No games in progress. Type 'create' to start a new game!");
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "No games in progress. Type 'create' to start a new game!"
+                    + EscapeSequences.RESET_TEXT_COLOR);
         }
 
         int i = 1;
