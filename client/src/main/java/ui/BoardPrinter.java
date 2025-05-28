@@ -71,7 +71,7 @@ public class BoardPrinter {
     }
 
     private static void printLabels(boolean whitePerspective) {
-        String[] labels = {"A", "B", "C", "D", "E", "F", "G", "H"};
+        String[] labels = {"A ", "B ", "C ", "D ", "E ", "F ", "G ", "H "};
 
         System.out.print("   "); //better line up
 
