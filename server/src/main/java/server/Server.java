@@ -9,10 +9,16 @@ import spark.*;
 
 import java.util.Map;
 
+import static spark.Spark.webSocket;
+
 public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
+
+        //order of operations is important
+        webSocket("/ws", GameWebSocketHandler.class);
+
 
         Spark.staticFiles.location("web");
 
