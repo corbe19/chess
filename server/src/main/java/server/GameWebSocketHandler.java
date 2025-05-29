@@ -33,6 +33,8 @@ public class GameWebSocketHandler {
 
 
     private static final Map<Integer, Map<String, Session>> sessionsByGame = new ConcurrentHashMap<>();
+    private final Map<Integer, String> resignedGames = new ConcurrentHashMap<>();
+
 
 
     @OnWebSocketConnect
@@ -53,7 +55,7 @@ public class GameWebSocketHandler {
                 case CONNECT -> handleConnect(gson.fromJson(message, ConnectCommand.class), session);
                 case MAKE_MOVE -> handleMove(gson.fromJson(message, MakeMoveCommand.class), session);
                 //case LEAVE -> handleLeave(gson.fromJson(message, LeaveCommand.class));
-                // case RESIGN -> handleResign(gson.fromJson(message, ResignCommand.class));
+                case RESIGN -> handleResign(gson.fromJson(message, ResignCommand.class), session);
                 default -> sendError(session, "Error: Unknown command");
             }
         } catch (Exception e) {
@@ -152,6 +154,12 @@ public class GameWebSocketHandler {
 
         ChessGame chessGame = game.game();
 
+        String resignedUser = resignedGames.get(gameID);
+        if (resignedUser != null) {
+            sendError(session, "Error: The game is already over. " + resignedUser + " resigned.");
+            return;
+        }
+
         //check turn
         ChessGame.TeamColor playerColor = null;
         if (username.equals(game.whiteUsername())) {
@@ -215,7 +223,62 @@ public class GameWebSocketHandler {
         }
 
         //holy moly
-}
+    }
+
+    //<========================================================== Handle Resign ==========================================================>
+    private void handleResign(ResignCommand command, Session session) {
+        String authToken = command.getAuthToken();
+        int gameID = command.getGameID();
+
+        AuthData auth;
+        try {
+            auth = authDAO.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: Invalid auth token");
+                return;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access auth data");
+            return;
+        }
+
+        String username = auth.username();
+
+        GameData game;
+        try {
+            game = gameDAO.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: Invalid game ID");
+                return;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access game data");
+            return;
+        }
+
+        //check for resign
+        if (resignedGames.containsKey(gameID)) {
+            sendError(session, "Error: Game already ended due to resignation.");
+            return;
+        }
+
+        if (!username.equals(game.whiteUsername()) && !username.equals(game.blackUsername())) {
+            sendError(session, "Error: You are not a player in this game");
+            return;
+        }
+
+        resignedGames.put(gameID, username);
+
+        broadcastAll(gameID, new NotificationMessage(username + " has resigned."));
+
+        try {
+            gameDAO.updateGame(game);
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Failed to store resign.");
+        }
+
+    }
+
 
     //I dont want to send duplicate notifications to players
     private void broadcastExcept(int gameID, ServerMessage message, String excludeAuthToken) {
