@@ -110,6 +110,18 @@ public class GameWebSocketHandler {
 
     }
 
+    //HandleMove
+    //validate auth
+    //get game
+    //check turn
+    //valid move?
+    //make move
+    //save move
+    //broadcast move
+    //notify lobby about move
+    //Check for mate?
+    //holy moly
+
     //I dont want to send duplicate notifications to players
     private void broadcastExcept(int gameID, ServerMessage message, String excludeAuthToken) {
         Map<String, Session> clients = sessionsByGame.getOrDefault(gameID, Map.of());
@@ -125,7 +137,18 @@ public class GameWebSocketHandler {
         }
     }
 
+    private void broadcastAll(int gameID, ServerMessage message) {
+        Map<String, Session> clients = sessionsByGame.getOrDefault(gameID, Map.of());
+        String json = gson.toJson(message);
 
+        for (Session session : clients.values()) {
+            try {
+                session.getRemote().sendString(json);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private void send(Session session, ServerMessage message) {
         try {
