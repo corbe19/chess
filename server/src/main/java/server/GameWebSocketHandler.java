@@ -43,10 +43,12 @@ public class GameWebSocketHandler {
     }
 
     @OnWebSocketClose
-    public void onClose(Session session, int statusCode, String message) {
-        System.out.println("Connection closed: " + message);
+    public void onClose(Session session, int statusCode, String reason) {
+        //loop through games and remove this one
+        for (var entry : sessionsByGame.entrySet()) {
+            entry.getValue().values().removeIf(s -> s.equals(session));
+        }
     }
-
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         try {
@@ -54,7 +56,7 @@ public class GameWebSocketHandler {
             switch (base.getCommandType()) {
                 case CONNECT -> handleConnect(gson.fromJson(message, ConnectCommand.class), session);
                 case MAKE_MOVE -> handleMove(gson.fromJson(message, MakeMoveCommand.class), session);
-                //case LEAVE -> handleLeave(gson.fromJson(message, LeaveCommand.class));
+                case LEAVE -> handleLeave(gson.fromJson(message, LeaveCommand.class), session);
                 case RESIGN -> handleResign(gson.fromJson(message, ResignCommand.class), session);
                 default -> sendError(session, "Error: Unknown command");
             }
@@ -66,95 +68,43 @@ public class GameWebSocketHandler {
 
     //<========================================================== Handle Connect ==========================================================>
     private void handleConnect(ConnectCommand command, Session session) {
-        String authToken = command.getAuthToken();
-        int gameID = command.getGameID();
-        AuthData auth;
-
-        try {
-            auth = authDAO.getAuth(authToken);
-            if (auth == null) {
-                sendError(session, "Error: Invalid auth token");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access auth data");
-            return;
-        }
-
-        String username = auth.username();
-
-        //game exist?
-        GameData game;
-        try {
-            game = gameDAO.getGame(gameID);
-            if (game == null) {
-                sendError(session, "Error: Invalid game ID");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access game data");
+        HandlerContext ctx = initHandler(command, session);
+        if (ctx == null) {
             return;
         }
 
         //store session for later
-        sessionsByGame.computeIfAbsent(gameID, k -> new ConcurrentHashMap<>()).put(authToken, session);
+        sessionsByGame.computeIfAbsent(ctx.gameID, k -> new ConcurrentHashMap<>()).put(ctx.authToken, session);
 
-        send(session, new LoadGameMessage(game.game()));
+        send(session, new LoadGameMessage(ctx.game.game()));
 
         //sort out players for notifications
         String role;
-        if (username.equals(game.whiteUsername())) {
+        if (ctx.username.equals(ctx.game.whiteUsername())) {
             role = "White";
-        } else if (username.equals(game.blackUsername())) {
+        } else if (ctx.username.equals(ctx.game.blackUsername())) {
             role = "Black";
         } else {
             role = "Observer";
         }
 
         //actual notification
-        String notification = username + " joined the game as " + role + ".";
-        broadcastExcept(gameID, new NotificationMessage(notification), authToken);
-
+        String notification = ctx.username + " joined the game as " + role + ".";
+        broadcastExcept(ctx.gameID, new NotificationMessage(notification), ctx.authToken);
     }
 
     //<========================================================== Handle Move ==========================================================>
     private void handleMove(MakeMoveCommand command, Session session) {
-        String authToken = command.getAuthToken();
-        int gameID = command.getGameID();
+        HandlerContext ctx = initHandler(command, session);
+        if (ctx == null) {
+            return;
+        }
+
         ChessMove move = command.getMove();
+        ChessGame chessGame = ctx.game.game();
 
 
-        //validate auth
-        AuthData auth;
-        try {
-            auth = authDAO.getAuth(authToken);
-            if (auth == null) {
-                sendError(session, "Error: Invalid auth token");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access auth data ");
-            return;
-        }
-
-        String username = auth.username();
-
-        //get game
-        GameData game;
-        try {
-            game = gameDAO.getGame(gameID);
-            if (game == null) {
-                sendError(session, "Error: Invalid game ID");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access game data");
-            return;
-        }
-
-        ChessGame chessGame = game.game();
-
-        String resignedUser = resignedGames.get(gameID);
+        String resignedUser = resignedGames.get(ctx.gameID);
         if (resignedUser != null) {
             sendError(session, "Error: The game is already over. " + resignedUser + " resigned.");
             return;
@@ -162,9 +112,9 @@ public class GameWebSocketHandler {
 
         //check turn
         ChessGame.TeamColor playerColor = null;
-        if (username.equals(game.whiteUsername())) {
+        if (ctx.username.equals(ctx.game.whiteUsername())) {
             playerColor = ChessGame.TeamColor.WHITE;
-        } else if (username.equals(game.blackUsername())) {
+        } else if (ctx.username.equals(ctx.game.blackUsername())) {
             playerColor = ChessGame.TeamColor.BLACK;
         } else {
             sendError(session, "Error: you are not a player in this game :(");
@@ -188,10 +138,10 @@ public class GameWebSocketHandler {
 
         //save move
         GameData updatedGame = new GameData(
-                game.gameID(),
-                game.whiteUsername(),
-                game.blackUsername(),
-                game.gameName(),
+                ctx.game.gameID(),
+                ctx.game.whiteUsername(),
+                ctx.game.blackUsername(),
+                ctx.game.gameName(),
                 chessGame
         );
 
@@ -203,23 +153,23 @@ public class GameWebSocketHandler {
         }
 
         //broadcast move
-        broadcastAll(gameID, new LoadGameMessage(chessGame));
+        broadcastAll(ctx.gameID, new LoadGameMessage(chessGame));
 
         //notify lobby about move
-        String moveDescription = username + " moved from " +
+        String moveDescription = ctx.username + " moved from " +
                 move.getStartPosition() + " to " + move.getEndPosition();
-        broadcastExcept(gameID, new NotificationMessage(moveDescription), authToken);
+        broadcastExcept(ctx.gameID, new NotificationMessage(moveDescription), ctx.authToken);
 
         //Check for mate?
         ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE)
                 ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
 
         if (chessGame.isInCheckmate(opponent)) {
-            broadcastAll(gameID, new NotificationMessage("Checkmate! " + username + " wins."));
+            broadcastAll(ctx.gameID, new NotificationMessage("Checkmate! " + ctx.username + " wins."));
         } else if (chessGame.isInCheck(opponent)) {
-            broadcastAll(gameID, new NotificationMessage("Check against " + opponent.name()));
+            broadcastAll(ctx.gameID, new NotificationMessage("Check against " + opponent.name()));
         } else if (chessGame.isInStalemate(opponent)) {
-            broadcastAll(gameID, new NotificationMessage("Stalemate! The game is a draw."));
+            broadcastAll(ctx.gameID, new NotificationMessage("Stalemate! The game is a draw."));
         }
 
         //holy moly
@@ -227,56 +177,78 @@ public class GameWebSocketHandler {
 
     //<========================================================== Handle Resign ==========================================================>
     private void handleResign(ResignCommand command, Session session) {
-        String authToken = command.getAuthToken();
-        int gameID = command.getGameID();
-
-        AuthData auth;
-        try {
-            auth = authDAO.getAuth(authToken);
-            if (auth == null) {
-                sendError(session, "Error: Invalid auth token");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access auth data");
+        HandlerContext ctx = initHandler(command, session);
+        if (ctx == null) {
             return;
         }
-
-        String username = auth.username();
-
-        GameData game;
-        try {
-            game = gameDAO.getGame(gameID);
-            if (game == null) {
-                sendError(session, "Error: Invalid game ID");
-                return;
-            }
-        } catch (DataAccessException e) {
-            sendError(session, "Error: Could not access game data");
-            return;
-        }
-
         //check for resign
-        if (resignedGames.containsKey(gameID)) {
+        if (resignedGames.containsKey(ctx.gameID)) {
             sendError(session, "Error: Game already ended due to resignation.");
             return;
         }
 
-        if (!username.equals(game.whiteUsername()) && !username.equals(game.blackUsername())) {
+        if (!ctx.username.equals(ctx.game.whiteUsername()) && !ctx.username.equals(ctx.game.blackUsername())) {
             sendError(session, "Error: You are not a player in this game");
             return;
         }
 
-        resignedGames.put(gameID, username);
+        resignedGames.put(ctx.gameID, ctx.username);
 
-        broadcastAll(gameID, new NotificationMessage(username + " has resigned."));
+        broadcastAll(ctx.gameID, new NotificationMessage(ctx.username + " has resigned."));
 
         try {
-            gameDAO.updateGame(game);
+            gameDAO.updateGame(ctx.game);
         } catch (DataAccessException e) {
             sendError(session, "Error: Failed to store resign.");
         }
 
+    }
+
+    //<========================================================== Handle Leave ==========================================================>
+    private void handleLeave(LeaveCommand command, Session session) {
+        HandlerContext ctx = initHandler(command, session);
+        if (ctx == null) {
+            return;
+        }
+
+        if (sessionsByGame.containsKey(ctx.gameID)) {
+            sessionsByGame.get(ctx.gameID).remove(ctx.authToken);
+            if (sessionsByGame.get(ctx.gameID).isEmpty()) {
+                sessionsByGame.remove(ctx.gameID);
+            }
+        }
+
+        //make sure color becomes null
+        GameData game = ctx.game;
+        boolean updated = false;
+        String white = game.whiteUsername();
+        String black = game.blackUsername();
+
+        if (ctx.username.equals(white)) {
+            white = null;
+            updated = true;
+        } else if (ctx.username.equals(black)) {
+            black = null;
+            updated = true;
+        }
+
+        if (updated) {
+            GameData updatedGame = new GameData(
+                    game.gameID(),
+                    white,
+                    black,
+                    game.gameName(),
+                    game.game()
+            );
+            try {
+                gameDAO.updateGame(updatedGame);
+            } catch (DataAccessException e) {
+                sendError(session, "Error: Could not update game after leaving.");
+                return;
+            }
+        }
+
+        broadcastExcept(ctx.gameID, new NotificationMessage(ctx.username + " has left the game."), ctx.authToken);
     }
 
 
@@ -327,5 +299,52 @@ public class GameWebSocketHandler {
         } else {
             System.err.println("Warning: Tried to send error to null session: " + msg);
         }
+    }
+
+    private static class HandlerContext {
+        final String authToken;
+        final String username;
+        final int gameID;
+        final GameData game;
+        final AuthData auth;
+
+        HandlerContext(String authToken, String username, int gameID, GameData game, AuthData auth) {
+            this.authToken = authToken;
+            this.username = username;
+            this.gameID = gameID;
+            this.game = game;
+            this.auth = auth;
+        }
+    }
+
+    private HandlerContext initHandler(UserGameCommand command, Session session) {
+        String authToken = command.getAuthToken();
+        int gameID = command.getGameID();
+
+        AuthData auth;
+        try {
+            auth = authDAO.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: Invalid auth token");
+                return null;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access auth data");
+            return null;
+        }
+
+        GameData game;
+        try {
+            game = gameDAO.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: Invalid game ID");
+                return null;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access game data");
+            return null;
+        }
+
+        return new HandlerContext(authToken, auth.username(), gameID, game, auth);
     }
 }
