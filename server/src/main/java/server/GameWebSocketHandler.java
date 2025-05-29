@@ -1,5 +1,8 @@
 package server;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -17,6 +20,7 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +51,7 @@ public class GameWebSocketHandler {
             UserGameCommand base = gson.fromJson(message, UserGameCommand.class);
             switch (base.getCommandType()) {
                 case CONNECT -> handleConnect(gson.fromJson(message, ConnectCommand.class), session);
-                //case MAKE_MOVE -> handleMove(gson.fromJson(message, MakeMoveCommand.class));
+                case MAKE_MOVE -> handleMove(gson.fromJson(message, MakeMoveCommand.class), session);
                 //case LEAVE -> handleLeave(gson.fromJson(message, LeaveCommand.class));
                 // case RESIGN -> handleResign(gson.fromJson(message, ResignCommand.class));
                 default -> sendError(session, "Error: Unknown command");
@@ -58,6 +62,7 @@ public class GameWebSocketHandler {
         }
     }
 
+    //<========================================================== Handle Connect ==========================================================>
     private void handleConnect(ConnectCommand command, Session session) {
         String authToken = command.getAuthToken();
         int gameID = command.getGameID();
@@ -110,17 +115,107 @@ public class GameWebSocketHandler {
 
     }
 
-    //HandleMove
-    //validate auth
-    //get game
-    //check turn
-    //valid move?
-    //make move
-    //save move
-    //broadcast move
-    //notify lobby about move
-    //Check for mate?
-    //holy moly
+    //<========================================================== Handle Move ==========================================================>
+    private void handleMove(MakeMoveCommand command, Session session) {
+        String authToken = command.getAuthToken();
+        int gameID = command.getGameID();
+        ChessMove move = command.getMove();
+
+
+        //validate auth
+        AuthData auth;
+        try {
+            auth = authDAO.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: Invalid auth token");
+                return;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access auth data ");
+            return;
+        }
+
+        String username = auth.username();
+
+        //get game
+        GameData game;
+        try {
+            game = gameDAO.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: Invalid game ID");
+                return;
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not access game data");
+            return;
+        }
+
+        ChessGame chessGame = game.game();
+
+        //check turn
+        ChessGame.TeamColor playerColor = null;
+        if (username.equals(game.whiteUsername())) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        } else if (username.equals(game.blackUsername())) {
+            playerColor = ChessGame.TeamColor.BLACK;
+        } else {
+            sendError(session, "Error: you are not a player in this game :(");
+            return;
+        }
+
+        if (chessGame.getTeamTurn() != playerColor) {
+            sendError(session, "Error: It is not your turn. Patience please.");
+            return;
+        }
+
+        //valid move?
+
+        //make move
+        try {
+            chessGame.makeMove(move);
+        } catch (InvalidMoveException e) {
+            sendError(session, "Error: Invalid move — " + e.getMessage());
+            return;
+        }
+
+        //save move
+        GameData updatedGame = new GameData(
+                game.gameID(),
+                game.whiteUsername(),
+                game.blackUsername(),
+                game.gameName(),
+                chessGame
+        );
+
+        try {
+            gameDAO.updateGame(updatedGame);
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Could not update game state.");
+            return;
+        }
+
+        //broadcast move
+        broadcastAll(gameID, new LoadGameMessage(chessGame));
+
+        //notify lobby about move
+        String moveDescription = username + " moved from " +
+                move.getStartPosition() + " to " + move.getEndPosition();
+        broadcastExcept(gameID, new NotificationMessage(moveDescription), authToken);
+
+        //Check for mate?
+        ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE)
+                ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+
+        if (chessGame.isInCheckmate(opponent)) {
+            broadcastAll(gameID, new NotificationMessage("Checkmate! " + username + " wins."));
+        } else if (chessGame.isInCheck(opponent)) {
+            broadcastAll(gameID, new NotificationMessage("Check against " + opponent.name()));
+        } else if (chessGame.isInStalemate(opponent)) {
+            broadcastAll(gameID, new NotificationMessage("Stalemate! The game is a draw."));
+        }
+
+        //holy moly
+}
 
     //I dont want to send duplicate notifications to players
     private void broadcastExcept(int gameID, ServerMessage message, String excludeAuthToken) {
@@ -160,6 +255,14 @@ public class GameWebSocketHandler {
     }
 
     private void sendError(Session session, String msg) {
-        send(session, new ErrorMessage(msg));
+        if (session != null) {
+            try {
+                session.getRemote().sendString(gson.toJson(new ErrorMessage(msg)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Warning: Tried to send error to null session: " + msg);
+        }
     }
 }
