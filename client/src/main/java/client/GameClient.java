@@ -1,52 +1,47 @@
 package client;
 
 import chess.ChessGame;
-import ui.BoardPrinter;
-import websocket.commands.*;
-import websocket.messages.NotificationMessage;
+import chess.ChessMove;
+import websocket.commands.JoinPlayerCommand;
+import websocket.commands.LeaveCommand;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.ResignCommand;
+import websocket.messages.ServerMessage;
 
-import java.util.Locale;
-import java.util.Scanner;
-
-import static ui.BoardPrinter.draw;
-
+import java.io.IOException;
 
 public class GameClient {
-
-    private final ChessGame.TeamColor teamColor;
+    private final String authToken;
     private final int gameID;
-    private final ChessGame game;
     private final GameClientSocket socket;
-    private final Scanner scanner = new Scanner(System.in);
-    private boolean running = true;
 
-    public GameClient(ChessGame.TeamColor teamColor, int gameID, ChessGame game, GameClientSocket socket) {
-        this.teamColor = teamColor;
+    public GameClient(String authToken, int gameID, MessageHandler handler) {
+        this.authToken = authToken;
         this.gameID = gameID;
-        this.game = game;
-        this.socket = socket;
+        this.socket = new GameClientSocket(handler);
     }
 
-    public void run() {
-        System.out.println("\nWelcome! You are playing as " + teamColor + ".");
-        printBoard();
-
-        while (running) {
-            System.out.print("\nEnter a command (move, resign, leave, help: )");
-            String input = scanner.nextLine().trim().toLowerCase();
-
-            switch (input) {
-                //case "move" -> handleMove();
-                //case "resign" -> handleResign();
-                //case "leave" -> handleLeave();
-                //case "help" -> showHelp;
-                default -> System.out.println("Unknown command. Type 'help' for options");
-            }
-        }
+    public void connect(int port) throws Exception {
+        socket.connect(port);
     }
 
-    private void printBoard() {
-        BoardPrinter.draw(game.getBoard(), teamColor);
+    public void joinGame(ChessGame.TeamColor color) throws IOException {
+        var command = new JoinPlayerCommand(authToken, gameID, color);  //null = observer
+        socket.send(command);
     }
 
+    public void makeMove(ChessMove move) throws IOException {
+        var command = new MakeMoveCommand(authToken, gameID, move);
+        socket.send(command);
+    }
+
+    public void resign() throws IOException {
+        var command = new ResignCommand(authToken, gameID);
+        socket.send(command);
+    }
+
+    public void leave() throws IOException {
+        var command = new LeaveCommand(authToken, gameID);
+        socket.send(command);
+    }
 }

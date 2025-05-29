@@ -5,11 +5,14 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.OnError;
 import org.eclipse.jetty.websocket.api.Session;
 import java.io.IOException;
+import java.net.URI;
+
 import client.MessageHandler.*;
 
 public class GameClientSocket {
@@ -19,6 +22,13 @@ public class GameClientSocket {
 
     public GameClientSocket(MessageHandler handler) {
         this.handler = handler;
+    }
+
+    public void connect(int port) throws Exception {
+        WebSocketClient client = new WebSocketClient();
+        client.start();
+        URI uri = new URI("ws://localhost:" + port + "/ws");
+        client.connect(this, uri).get();
     }
 
     @OnWebSocketConnect
