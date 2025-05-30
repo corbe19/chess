@@ -44,4 +44,5 @@ public class GameClient {
         var command = new LeaveCommand(authToken, gameID);
         socket.send(command);
     }
+
 }
