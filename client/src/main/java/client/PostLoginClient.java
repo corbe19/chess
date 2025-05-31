@@ -5,6 +5,7 @@ import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.ListGamesResult;
+import repl.GameREPL;
 import ui.EscapeSequences;
 
 import java.io.IOException;
@@ -15,9 +16,11 @@ import java.util.List;
 public class PostLoginClient {
     private final ServerFacade server;
     private List<GameData> lastGameList = new ArrayList<>();
+    private final int websocketPort;
 
-    public PostLoginClient(ServerFacade server) {
+    public PostLoginClient(ServerFacade server, int websocketPort) {
         this.server = server;
+        this.websocketPort = websocketPort;
     }
 
     public void help() {
@@ -97,33 +100,40 @@ public class PostLoginClient {
         }
 
         int gameID = lastGameList.get(index - 1).gameID();
-        String color = tokens[2].toUpperCase();
-        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+        String colorStr = tokens[2].toUpperCase(); //I hate java
+
+        if (!colorStr.equals("WHITE") && !colorStr.equals("BLACK")) {
             throw new IllegalArgumentException(EscapeSequences.SET_TEXT_COLOR_RED + "Color must be " +
                     EscapeSequences.SET_TEXT_BOLD + "'WHITE'" +
                     EscapeSequences.RESET_TEXT_BOLD_FAINT + " or " +
                     EscapeSequences.SET_TEXT_BOLD + "'BLACK'" +
                     EscapeSequences.RESET_TEXT_BOLD_FAINT);
         }
+
+        ChessGame.TeamColor color = switch (colorStr) {
+            case "WHITE" -> ChessGame.TeamColor.WHITE;
+            case "BLACK" -> ChessGame.TeamColor.BLACK;
+            default -> throw new IllegalArgumentException("Color must be WHITE or BLACK.");
+        };
+
+
         try {
-            server.joinGame(auth, gameID, color);
-            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Joined game " + gameID + " as " +
-                    EscapeSequences.SET_TEXT_BOLD + color + EscapeSequences.RESET_TEXT_BOLD_FAINT + EscapeSequences.RESET_TEXT_COLOR);
+            server.joinGame(auth, gameID, colorStr);
 
-            //draw board on join
-            ChessBoard board = new ChessGame().getBoard(); //REPLACE WITH REAL GAME STATE LATER
-            ChessGame.TeamColor perspective = color.equals("WHITE")
-                    ? ChessGame.TeamColor.WHITE
-                    : ChessGame.TeamColor.BLACK;
-            ui.BoardPrinter.draw(board, perspective);
+            MessageHandlerImpl handler = new MessageHandlerImpl();
+            GameClient gameClient = new GameClient(auth.authToken(), gameID, handler);
+            gameClient.connect(websocketPort);
+            gameClient.joinGame(color);
 
+            //wait for da real game data
+            ChessGame game = handler.waitForGame();
 
-        } catch (IOException e) {
-            if (e.getMessage().contains("already taken")) {
-                System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Color is already taken.");
-            } else {
-                throw e;
-            }
+            //start GameREPL
+            GameREPL repl = new GameREPL(gameClient, game, color);
+            repl.run();
+
+        } catch (Exception e) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Join failed: " + e.getMessage());
         }
     }
 
@@ -143,18 +153,27 @@ public class PostLoginClient {
         }
 
         int gameID = lastGameList.get(index - 1).gameID();
+
         try {
             server.joinGame(auth, gameID, null); // no color = observer
+
             System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game: " +
                     EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT
                     + EscapeSequences.RESET_TEXT_COLOR);
 
-            //draw board from white perspective
-            ChessBoard board = new ChessGame().getBoard(); //REPLACE WITH REAL GAME STATE LATER
-            ui.BoardPrinter.draw(board, ChessGame.TeamColor.WHITE);
+            MessageHandlerImpl handler = new MessageHandlerImpl();
+            GameClient gameClient = new GameClient(auth.authToken(), gameID, handler);
+            gameClient.connect(websocketPort); //use ws port
+            gameClient.joinGame(null); // observer
 
-        } catch (IOException e) {
-            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Could not observe game: " + e.getMessage());
+            ChessGame game = handler.waitForGame();
+
+            //view from white perspective
+            GameREPL repl = new GameREPL(gameClient, game, ChessGame.TeamColor.WHITE);
+            repl.run();
+
+        } catch (Exception e) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Observe failed: " + e.getMessage());
         }
     }
 

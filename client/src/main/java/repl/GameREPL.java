@@ -5,6 +5,7 @@ import client.GameClient;
 import ui.BoardPrinter;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Scanner;
 
 public class GameREPL {
@@ -33,7 +34,7 @@ public class GameREPL {
                 case "help" -> printHelp();
                 case "redraw" -> drawBoard();
                 case "move" -> handleMove(tokens);
-                //case "highlight" -> handleHighlight(tokens);
+                case "highlight" -> handleHighlight(tokens);
                 case "resign" -> {
                     if (confirm("Are you sure you want to resign?")) {
                         try {
@@ -140,5 +141,25 @@ public class GameREPL {
         return scanner.nextLine().trim().equalsIgnoreCase("y");
     }
 
+    private void handleHighlight(String[] tokens) {
+        if (tokens.length < 2) {
+            System.out.println("Usage: highlight <position> (e.g., highlight e2)");
+            return;
+        }
+
+        try {
+            ChessPosition pos = parsePosition(tokens[1]);
+            ChessPiece piece = game.getBoard().getPiece(pos);
+            if (piece == null) {
+                System.out.println("No piece at that position.");
+                return;
+            }
+
+            Collection<ChessMove> legalMoves = game.validMoves(pos);
+            BoardPrinter.printHighlighted(game.getBoard(), playerColor, pos, legalMoves);
+        } catch (Exception e) {
+            System.out.println("Invalid input: " + e.getMessage());
+        }
+    }
 
 }

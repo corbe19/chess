@@ -1,9 +1,8 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.Collection;
 
 public class BoardPrinter {
     private static final String LIGHT = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
@@ -81,5 +80,54 @@ public class BoardPrinter {
         }
 
         System.out.println();
+    }
+
+    public static void printHighlighted(ChessBoard board, ChessGame.TeamColor perspective,
+                                       ChessPosition selected, Collection<ChessMove> legalMoves) {
+        if (perspective == ChessGame.TeamColor.WHITE) {
+            drawBoardHighlighted(board, true, selected, legalMoves);
+        } else {
+            drawBoardHighlighted(board, false, selected, legalMoves);
+        }
+    }
+
+    private static void drawBoardHighlighted(ChessBoard board, boolean isWhitePerspective,
+                                             ChessPosition selected, Collection<ChessMove> legalMoves) {
+        System.out.println();
+        int startRow = isWhitePerspective ? 8 : 1;
+        int endRow = isWhitePerspective ? 0 : 9;
+        int rowStep = isWhitePerspective ? -1 : 1;
+
+        for (int row = startRow; row != endRow; row += rowStep) {
+            System.out.print(" " + row + " "); //row label
+            for (int col = 1; col <= 8; col++) {
+                int displayCol = isWhitePerspective ? col : 9 - col;
+                ChessPosition pos = new ChessPosition(row, displayCol);
+                printHighlightedSquare(board, pos, selected, legalMoves);
+            }
+            System.out.print(" " + row + "\n");
+        }
+
+        printLabels(isWhitePerspective);
+    }
+
+    private static void printHighlightedSquare(ChessBoard board, ChessPosition pos,
+                                               ChessPosition selected, Collection<ChessMove> legalMoves) {
+        int row = pos.getRow();
+        int col = pos.getColumn();
+
+        boolean isLight = (row + col) % 2 != 0;
+        String defaultBG = isLight ? LIGHT : DARK;
+        String bg = defaultBG;
+
+        if (selected != null && selected.equals(pos)) {
+            bg = EscapeSequences.SET_BG_COLOR_BLUE;
+        } else if (legalMoves != null && legalMoves.stream().anyMatch(m -> m.getEndPosition().equals(pos))) {
+            bg = EscapeSequences.SET_BG_COLOR_GREEN;
+        }
+
+        ChessPiece piece = board.getPiece(pos);
+        String symbol = getSymbol(piece);
+        System.out.print(bg + symbol + RESET);
     }
 }

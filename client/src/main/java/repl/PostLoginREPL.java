@@ -9,10 +9,13 @@ import java.util.Scanner;
 public class PostLoginREPL {
     private final Scanner scanner;
     private final PostLoginClient client;
+    private final int websocketPort;
 
-    public PostLoginREPL(Scanner scanner, client.ServerFacade server) {
+    public PostLoginREPL(Scanner scanner, client.ServerFacade server, int websocketPort) {
         this.scanner = scanner;
-        this.client = new PostLoginClient(server);
+        this.websocketPort = websocketPort;
+        this.client = new PostLoginClient(server, websocketPort);
+
     }
 
     public AuthData run(AuthData auth) {

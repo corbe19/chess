@@ -10,12 +10,15 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("♕ Welcome to 240 Chess. Type Help to get Started. ♕");
 
-        String serverUrl = "http://localhost:8080";  //do I need to pass this with args? the answer is yes
+
+        int port = 8080;
+        String serverUrl = "http://localhost:" + port;
+
         ServerFacade server = new ServerFacade(serverUrl);
         Scanner scanner = new Scanner(System.in);
 
         PreLoginREPL prelogin = new PreLoginREPL(scanner, server);
-        PostLoginREPL postlogin = new PostLoginREPL(scanner, server);
+        PostLoginREPL postlogin = new PostLoginREPL(scanner, server, port); // pass port for WebSocket
 
         AuthData auth = null;
 

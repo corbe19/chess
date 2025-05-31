@@ -1,10 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import websocket.messages.ServerMessage;
 
@@ -15,6 +12,7 @@ import java.net.URI;
 
 import client.MessageHandler.*;
 
+@WebSocket
 public class GameClientSocket {
     private Session session;
     private final Gson gson = new Gson();
@@ -38,9 +36,8 @@ public class GameClientSocket {
     }
 
     @OnWebSocketMessage
-    public void onMessage(String msg) {
-        ServerMessage message = gson.fromJson(msg, ServerMessage.class);
-        handler.handle(message, session);
+    public void onMessage(String message) {
+        handler.handle(message, session); //passing raw json now
     }
 
     @OnWebSocketClose
