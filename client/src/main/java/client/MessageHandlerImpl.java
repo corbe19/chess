@@ -3,6 +3,8 @@ package client;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
+import repl.GameREPL;
+import ui.BoardPrinter;
 import websocket.messages.*;
 
 import java.util.concurrent.BlockingQueue;
@@ -12,6 +14,17 @@ public class MessageHandlerImpl implements MessageHandler {
     private final BlockingQueue<ChessGame> gameQueue = new LinkedBlockingQueue<>();
     private final Gson gson = new Gson();
 
+    private ChessGame currentGame;
+    private GameREPL repl;
+
+    public MessageHandlerImpl(GameREPL repl) {
+        this.repl = repl;
+
+    }
+    public void setREPL(GameREPL repl) {
+        this.repl = repl;
+    }
+
     @Override
     public void handle(String messageJson, Session session) {
         ServerMessage baseMessage = gson.fromJson(messageJson, ServerMessage.class);
@@ -19,8 +32,11 @@ public class MessageHandlerImpl implements MessageHandler {
         switch (baseMessage.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGameMessage load = gson.fromJson(messageJson, LoadGameMessage.class);
+                currentGame = load.getGame(); //store game so we can reprint later
                 gameQueue.offer(load.getGame());
-                System.out.println("Game loaded! Drawing board...");
+                if (repl != null) {
+                    repl.updateGame(currentGame); // pass to REPL for drawing
+                }
             }
             case NOTIFICATION -> {
                 NotificationMessage note = gson.fromJson(messageJson, NotificationMessage.class);
@@ -36,5 +52,9 @@ public class MessageHandlerImpl implements MessageHandler {
 
     public ChessGame waitForGame() throws InterruptedException {
         return gameQueue.take();
+    }
+
+    public ChessGame getCurrentGame() {
+        return currentGame;
     }
 }

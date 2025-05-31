@@ -120,7 +120,8 @@ public class PostLoginClient {
         try {
             server.joinGame(auth, gameID, colorStr);
 
-            MessageHandlerImpl handler = new MessageHandlerImpl();
+            GameREPL repl = new GameREPL(null, null, color);
+            MessageHandlerImpl handler = new MessageHandlerImpl(repl);
             GameClient gameClient = new GameClient(auth.authToken(), gameID, handler);
             gameClient.connect(websocketPort);
             gameClient.joinGame(color);
@@ -129,7 +130,7 @@ public class PostLoginClient {
             ChessGame game = handler.waitForGame();
 
             //start GameREPL
-            GameREPL repl = new GameREPL(gameClient, game, color);
+            repl.setClientAndGame(gameClient, game);
             repl.run();
 
         } catch (Exception e) {
@@ -161,15 +162,15 @@ public class PostLoginClient {
                     EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT
                     + EscapeSequences.RESET_TEXT_COLOR);
 
-            MessageHandlerImpl handler = new MessageHandlerImpl();
+            GameREPL repl = new GameREPL(null, null, null);
+            MessageHandlerImpl handler = new MessageHandlerImpl(repl);
             GameClient gameClient = new GameClient(auth.authToken(), gameID, handler);
             gameClient.connect(websocketPort); //use ws port
             gameClient.joinGame(null); // observer
 
             ChessGame game = handler.waitForGame();
 
-            //view from white perspective
-            GameREPL repl = new GameREPL(gameClient, game, ChessGame.TeamColor.WHITE);
+            repl.setClientAndGame(gameClient, game);
             repl.run();
 
         } catch (Exception e) {

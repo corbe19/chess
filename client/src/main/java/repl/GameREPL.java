@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 public class GameREPL {
     private final Scanner scanner;
-    private final GameClient client;
-    private final ChessGame game;
+    private GameClient client;
+    private ChessGame game;
     private final ChessGame.TeamColor playerColor;
 
     public GameREPL(GameClient client, ChessGame game, ChessGame.TeamColor playerColor) {
@@ -160,6 +160,16 @@ public class GameREPL {
         } catch (Exception e) {
             System.out.println("Invalid input: " + e.getMessage());
         }
+    }
+
+    public void updateGame(ChessGame updatedGame) {
+        this.game = updatedGame;
+        drawBoard();
+    }
+
+    public void setClientAndGame(GameClient client, ChessGame game) {
+        this.client = client;
+        this.game = game;
     }
 
 }

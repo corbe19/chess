@@ -27,6 +27,7 @@ public class BoardPrinter {
             System.out.print(" " + row + "\n");
         }
         printLabels(true);
+        System.out.flush();
     }
 
     //white board flipped
@@ -40,6 +41,7 @@ public class BoardPrinter {
             System.out.print(" " + row + "\n");
         }
         printLabels(false);
+        System.out.flush();
     }
 
     private static void printSquare(ChessBoard board, int row, int col) {
