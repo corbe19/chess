@@ -124,8 +124,20 @@ public class BoardPrinter {
 
         if (selected != null && selected.equals(pos)) {
             bg = EscapeSequences.SET_BG_COLOR_BLUE;
-        } else if (legalMoves != null && legalMoves.stream().anyMatch(m -> m.getEndPosition().equals(pos))) {
-            bg = EscapeSequences.SET_BG_COLOR_GREEN;
+        } else if (legalMoves != null) {
+            for (ChessMove move : legalMoves) {
+                if (move.getEndPosition().equals(pos)) {
+                    ChessPiece target = board.getPiece(pos);
+                    ChessPiece selectedPiece = board.getPiece(selected);
+                    if (target != null && selectedPiece != null &&
+                            target.getTeamColor() != selectedPiece.getTeamColor()) {
+                        bg = EscapeSequences.SET_BG_COLOR_RED;
+                    } else {
+                        bg = EscapeSequences.SET_BG_COLOR_GREEN;
+                    }
+                    break;
+                }
+            }
         }
 
         ChessPiece piece = board.getPiece(pos);

@@ -3,6 +3,7 @@ package repl;
 import chess.*;
 import client.GameClient;
 import ui.BoardPrinter;
+import ui.EscapeSequences;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -13,6 +14,7 @@ public class GameREPL {
     private GameClient client;
     private ChessGame game;
     private final ChessGame.TeamColor playerColor;
+    private boolean isInitialLoad = true;
 
     public GameREPL(GameClient client, ChessGame game, ChessGame.TeamColor playerColor) {
         this.client = client;
@@ -23,7 +25,9 @@ public class GameREPL {
 
     public void run() {
         System.out.println("Entering game. Type 'help' for available commands.");
+        System.out.println();
         drawBoard();
+        System.out.println();
 
         while (true) {
             System.out.print("> ");
@@ -32,11 +36,16 @@ public class GameREPL {
 
             switch (tokens[0].toLowerCase()) {
                 case "help" -> printHelp();
-                case "redraw" -> drawBoard();
+                case "redraw" -> {
+                    System.out.println();
+                    drawBoard();
+                    System.out.println();
+                }
                 case "move" -> handleMove(tokens);
                 case "highlight" -> handleHighlight(tokens);
                 case "resign" -> {
-                    if (confirm("Are you sure you want to resign?")) {
+                    if (confirm(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Are you sure you want to resign?"
+                    + EscapeSequences.RESET_TEXT_COLOR)) {
                         try {
                             client.resign();
                         } catch (Exception e) {
@@ -50,7 +59,8 @@ public class GameREPL {
                     } catch (Exception e) {
                         System.out.println("Error leaving: " + e.getMessage());
                     }
-                    System.out.println("You left the game.");
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "You left the game."
+                    + EscapeSequences.RESET_TEXT_COLOR);
                     return;
                 }
                 default -> System.out.println("Unknown command. Type 'help'.");
@@ -65,12 +75,18 @@ public class GameREPL {
     private void printHelp() {
         System.out.println();
         System.out.println("Available Commands:");
-        System.out.println("  redraw - Redraw the chess board.");
-        System.out.println("  move <START POSITION> <END POSITION> - Move a piece.");
-        System.out.println("  resign - Resign from the game.");
-        System.out.println("  leave - Leave the game and return to main menu.");
-        System.out.println("  highlight <CHESS POSITION>   - Highlight legal moves for the piece on <CHESS POSITION>.");
-        System.out.println("  help - Show this help message.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  redraw"
+                        + EscapeSequences.RESET_TEXT_COLOR + "- Redraw the chess board.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  move <START POSITION> <END POSITION>"
+                        + EscapeSequences.RESET_TEXT_COLOR + "- Move a piece.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  resign"
+                        + EscapeSequences.RESET_TEXT_COLOR + " - Resign from the game.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  leave"
+                + EscapeSequences.RESET_TEXT_COLOR + " - Leave the game and return to main menu.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  highlight <CHESS POSITION>"
+                + EscapeSequences.RESET_TEXT_COLOR + " - Highlight legal moves for the piece on <CHESS POSITION>.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  help"
+                + EscapeSequences.RESET_TEXT_COLOR + " - Show this help message.");
         System.out.println();
     }
 
@@ -162,9 +178,15 @@ public class GameREPL {
         }
     }
 
-    public void updateGame(ChessGame updatedGame) {
+    public void updateGame(ChessGame updatedGame, boolean suppressInitialPrint) {
         this.game = updatedGame;
+        if (isInitialLoad) {
+            isInitialLoad = false;
+            return;
+        }
+        System.out.println();
         drawBoard();
+        System.out.println();
     }
 
     public void setClientAndGame(GameClient client, ChessGame game) {

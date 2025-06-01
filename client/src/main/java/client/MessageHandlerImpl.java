@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import repl.GameREPL;
 import ui.BoardPrinter;
+import ui.EscapeSequences;
 import websocket.messages.*;
 
 import java.util.concurrent.BlockingQueue;
@@ -35,18 +36,22 @@ public class MessageHandlerImpl implements MessageHandler {
                 currentGame = load.getGame(); //store game so we can reprint later
                 gameQueue.offer(load.getGame());
                 if (repl != null) {
-                    repl.updateGame(currentGame); // pass to REPL for drawing
+                    repl.updateGame(currentGame, false); //pass to REPL for drawing
                 }
             }
             case NOTIFICATION -> {
                 NotificationMessage note = gson.fromJson(messageJson, NotificationMessage.class);
-                System.out.println("Notification: " + note.getMessage());
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + note.getMessage()
+                + EscapeSequences.RESET_TEXT_COLOR);
             }
             case ERROR -> {
                 ErrorMessage error = gson.fromJson(messageJson, ErrorMessage.class);
-                System.err.println("Error: " + error.getErrorMessage());
+                System.err.println(EscapeSequences.SET_TEXT_COLOR_RED + error.getErrorMessage()
+                + EscapeSequences.RESET_TEXT_COLOR);
             }
-            default -> System.out.println("Unknown message type: " + baseMessage.getServerMessageType());
+            default -> System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Unknown message type: " +
+                    EscapeSequences.SET_TEXT_COLOR_YELLOW + baseMessage.getServerMessageType() +
+                    EscapeSequences.RESET_TEXT_COLOR);
         }
     }
 

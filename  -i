@@ -1,0 +1,25 @@
+57c3239878ec87f926a36cf44cd898c2e429487e<|ENT|><|RY|>made a mess but refactoring to make sure repl is handling printing<|COM|><|MIT|>
+7694d552efe84da0a4c31c6bab0fda12dfb5d012<|ENT|><|RY|>Still buggy but making good progress<|COM|><|MIT|>
+12b80b889acc1125be5cc5c9814c0aba43fdc2f4<|ENT|><|RY|>Holy ive been struggling. GameClient Implemented? and GameREPL close<|COM|><|MIT|>
+38c7492344139853d62a64da5e2895987d9d3939<|ENT|><|RY|>Client drafted??<|COM|><|MIT|>
+200743b70f5c2e4da1c2cc35402b5537be7ad70f<|ENT|><|RY|>Started GameClient<|COM|><|MIT|>
+c6d726811fd5fab50383737d752ee561b7bd82d8<|ENT|><|RY|>GameClientSocket Implemented<|COM|><|MIT|>
+9c1e457f80421a6271790bb9501ba532360fbbfb<|ENT|><|RY|>handleLeave and refactor for less code duplication<|COM|><|MIT|>
+cd94b36535fdd78e68a1f2621bb4474afe17b99b<|ENT|><|RY|>handleResign implemented<|COM|><|MIT|>
+4b63838507eb72c7f8abf1a82c70aa0162c5db1e<|ENT|><|RY|>handleGame implemented<|COM|><|MIT|>
+195323d983b6542f98b87a6a37236c3b7ad6c0a5<|ENT|><|RY|>broadcastAll method and handleGame plan<|COM|><|MIT|>
+447fb62cef715079d6058acda11fb9a9a141ce9e<|ENT|><|RY|>handleConnect implemented<|COM|><|MIT|>
+6a8ffede0de7dedfb4f33e0f255ad95057f7debb<|ENT|><|RY|>Connection good. Handler in progress<|COM|><|MIT|>
+2065722102404e43f7616383974c4e1e4f3c326d<|ENT|><|RY|>Messages written<|COM|><|MIT|>
+0b5da4c5579cfc5b2723297fbdf0470ea6d899ec<|ENT|><|RY|>Command subclasses written<|COM|><|MIT|>
+a661ddbe70edf38cd1dace53321f8dbcb6c621f8<|ENT|><|RY|>Phase 6 getting started<|COM|><|MIT|>
+3ad333f6898ef0f7e09d29ad71e42ccb0cb942a6<|ENT|><|RY|>minor ui changes<|COM|><|MIT|>
+b849df4af986491a11927c6f09d757aa52b9d3bf<|ENT|><|RY|>made port dynamic for tests<|COM|><|MIT|>
+a8319dadd551fd0578b9158b57a91a5ca05d6104<|ENT|><|RY|>Added observer tests<|COM|><|MIT|>
+991017c2d1d6ae59bef39fcb221a50bc51e252e0<|ENT|><|RY|>more debugging<|COM|><|MIT|>
+b5e84a961a9ac2073138b8ceab30ea3a6073f0ef<|ENT|><|RY|>Testing testing testing<|COM|><|MIT|>
+8dd18a3223c689fe10eef67e15f86e9158830826<|ENT|><|RY|>COLORS AND ERRORS<|COM|><|MIT|>
+96210e7bbadede748fdc360151dfa1bc4a63333a<|ENT|><|RY|>observe added<|COM|><|MIT|>
+9e88576e7d333b893945d7943d804a672e86b704<|ENT|><|RY|>join added<|COM|><|MIT|>
+c1600745aa0f257c717bfb0770cdb818f0b1e9b6<|ENT|><|RY|>list added<|COM|><|MIT|>
+87df8f0d5af33513157072da375c38d536636925<|ENT|><|RY|>PostLoginREPL/Client help and create implemented<|COM|><|MIT|>

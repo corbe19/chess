@@ -90,7 +90,7 @@ public class GameWebSocketHandler {
 
         //actual notification
         String notification = ctx.username + " joined the game as " + role + ".";
-        broadcastExcept(ctx.gameID, new NotificationMessage(notification), ctx.authToken);
+        broadcastAll(ctx.gameID, new NotificationMessage(notification));
     }
 
     //<========================================================== Handle Move ==========================================================>
