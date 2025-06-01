@@ -76,9 +76,9 @@ public class GameREPL {
         System.out.println();
         System.out.println("Available Commands:");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  redraw"
-                        + EscapeSequences.RESET_TEXT_COLOR + "- Redraw the chess board.");
+                        + EscapeSequences.RESET_TEXT_COLOR + " - Redraw the chess board.");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  move <START POSITION> <END POSITION>"
-                        + EscapeSequences.RESET_TEXT_COLOR + "- Move a piece.");
+                        + EscapeSequences.RESET_TEXT_COLOR + " - Move a piece.");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  resign"
                         + EscapeSequences.RESET_TEXT_COLOR + " - Resign from the game.");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE +  "  leave"

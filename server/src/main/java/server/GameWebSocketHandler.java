@@ -85,7 +85,7 @@ public class GameWebSocketHandler {
         } else if (ctx.username.equals(ctx.game.blackUsername())) {
             role = "Black";
         } else {
-            role = "Observer";
+            role = "an Observer";
         }
 
         //actual notification

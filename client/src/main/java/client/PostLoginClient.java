@@ -23,7 +23,10 @@ public class PostLoginClient {
         this.websocketPort = websocketPort;
     }
 
-    public void help() {
+    public void help()
+    {
+        System.out.println();
+        System.out.println("Available Commands:");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + " create <NAME>"
                 + EscapeSequences.RESET_TEXT_COLOR + " - a game");
 
@@ -126,6 +129,9 @@ public class PostLoginClient {
             gameClient.connect(websocketPort);
             gameClient.joinGame(color);
 
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Joined game as " +
+                    EscapeSequences.SET_TEXT_BOLD+ colorStr + EscapeSequences.RESET_TEXT_COLOR);
+
             //wait for da real game data
             ChessGame game = handler.waitForGame();
 
@@ -158,9 +164,8 @@ public class PostLoginClient {
         try {
             server.joinGame(auth, gameID, null); // no color = observer
 
-            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game: " +
-                    EscapeSequences.SET_TEXT_BOLD + gameID + EscapeSequences.RESET_TEXT_BOLD_FAINT
-                    + EscapeSequences.RESET_TEXT_COLOR);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "Observing game. " +
+                   EscapeSequences.RESET_TEXT_COLOR);
 
             GameREPL repl = new GameREPL(null, null, null);
             MessageHandlerImpl handler = new MessageHandlerImpl(repl);

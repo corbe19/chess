@@ -10,7 +10,10 @@ public class BoardPrinter {
     private static final String RESET = EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
 
     public static void draw(ChessBoard board, ChessGame.TeamColor perspective) {
-        if (perspective == ChessGame.TeamColor.WHITE) {
+        if (perspective == null) {
+            drawBoardWhite(board);
+        }
+        else if (perspective == ChessGame.TeamColor.WHITE) {
             drawBoardWhite(board);
         } else {
             drawBoardBlack(board);

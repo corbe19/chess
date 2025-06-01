@@ -3,14 +3,11 @@ package client;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
-import websocket.messages.ServerMessage;
 
-import javax.websocket.OnError;
 import org.eclipse.jetty.websocket.api.Session;
 import java.io.IOException;
 import java.net.URI;
 
-import client.MessageHandler.*;
 
 @WebSocket
 public class GameClientSocket {
