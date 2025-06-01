@@ -49,4 +49,10 @@ public class ChessPosition {
     public int getColumn() {
         return col;
     }
+
+    @Override
+    public String toString() {
+        char col = (char) ('a' + this.col - 1);
+        return "" + col + this.row;
+    }
 }
