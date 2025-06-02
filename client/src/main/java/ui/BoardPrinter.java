@@ -10,13 +10,10 @@ public class BoardPrinter {
     private static final String RESET = EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
 
     public static void draw(ChessBoard board, ChessGame.TeamColor perspective) {
-        if (perspective == null) {
-            drawBoardWhite(board);
-        }
-        else if (perspective == ChessGame.TeamColor.WHITE) {
-            drawBoardWhite(board);
-        } else {
+        if (perspective == ChessGame.TeamColor.BLACK) {
             drawBoardBlack(board);
+        } else {
+            drawBoardWhite(board);
         }
     }
 
@@ -89,10 +86,10 @@ public class BoardPrinter {
 
     public static void printHighlighted(ChessBoard board, ChessGame.TeamColor perspective,
                                        ChessPosition selected, Collection<ChessMove> legalMoves) {
-        if (perspective == ChessGame.TeamColor.WHITE) {
-            drawBoardHighlighted(board, true, selected, legalMoves);
-        } else {
+        if (perspective == ChessGame.TeamColor.BLACK) {
             drawBoardHighlighted(board, false, selected, legalMoves);
+        } else {
+            drawBoardHighlighted(board, true, selected, legalMoves);
         }
     }
 

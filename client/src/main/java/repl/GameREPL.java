@@ -126,13 +126,16 @@ public class GameREPL {
                 }
             }
 
-            ChessMove move = new ChessMove(start, end, promotion);
-            client.makeMove(move);
+            try {
+                ChessMove move = new ChessMove(start, end, promotion);
+                client.makeMove(move);
+            } catch (Exception e) {
+                System.out.println("Failed to make move: " + e.getMessage());
+                e.printStackTrace();
+            }
 
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid move input: " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("Error sending move: " + e.getMessage());
         }
     }
 

@@ -1,16 +1,13 @@
 package client;
 
 import com.google.gson.Gson;
-import org.eclipse.jetty.websocket.api.annotations.*;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+import websocket.messages.ServerMessage;
 
-import org.eclipse.jetty.websocket.api.Session;
-import java.io.IOException;
+import javax.websocket.*;
 import java.net.URI;
 
-
-@WebSocket
-public class GameClientSocket {
+@ClientEndpoint
+public class GameClientSocket extends Endpoint {
     private Session session;
     private final Gson gson = new Gson();
     private final MessageHandler handler;
@@ -20,39 +17,31 @@ public class GameClientSocket {
     }
 
     public void connect(int port) throws Exception {
-        WebSocketClient client = new WebSocketClient();
-        client.start();
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         URI uri = new URI("ws://localhost:" + port + "/ws");
-        client.connect(this, uri).get();
+        container.connectToServer(this, uri);
     }
 
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
+    @Override
+    public void onOpen(Session session, EndpointConfig config) {
         this.session = session;
-        System.out.println("Connected to game server.");
+        session.addMessageHandler(String.class, message -> {
+            handler.handle(message);
+        });
+        System.out.println("Connected to server.");
     }
 
-    @OnWebSocketMessage
-    public void onMessage(String message) {
-        handler.handle(message, session); //passing raw json now
-    }
-
-    @OnWebSocketClose
-    public void onClose(int statusCode, String message) {
-        System.out.println("Disconnected from game server: " + message);
-    }
-
-    @OnWebSocketError
-    public void onError(Throwable error) {
-        System.out.println("Websocket error: " + error.getMessage());
-    }
-
-    public void send(Object message) throws IOException {
+    public void send(Object message) throws Exception {
         if (session != null && session.isOpen()) {
-            session.getRemote().sendString(gson.toJson(message));
+            session.getBasicRemote().sendText(gson.toJson(message));
         } else {
-            throw new IOException("WebSocket is not open.");
+            throw new IllegalStateException("WebSocket is not open.");
         }
     }
 
+    public void close() throws Exception {
+        if (session != null) {
+            session.close();
+        }
+    }
 }

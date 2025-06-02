@@ -2,9 +2,7 @@ package client;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import org.eclipse.jetty.websocket.api.Session;
 import repl.GameREPL;
-import ui.BoardPrinter;
 import ui.EscapeSequences;
 import websocket.messages.*;
 
@@ -27,7 +25,7 @@ public class MessageHandlerImpl implements MessageHandler {
     }
 
     @Override
-    public void handle(String messageJson, Session session) {
+    public void handle(String messageJson) {
         ServerMessage baseMessage = gson.fromJson(messageJson, ServerMessage.class);
 
         switch (baseMessage.getServerMessageType()) {

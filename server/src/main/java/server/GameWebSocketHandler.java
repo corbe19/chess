@@ -33,8 +33,7 @@ public class GameWebSocketHandler {
 
 
     private static final Map<Integer, Map<String, Session>> sessionsByGame = new ConcurrentHashMap<>();
-    private final Map<Integer, String> resignedGames = new ConcurrentHashMap<>();
-
+    private final Map<Integer, GameOverReason> gameOverStates = new ConcurrentHashMap<>();
 
 
     @OnWebSocketConnect
@@ -95,6 +94,7 @@ public class GameWebSocketHandler {
 
     //<========================================================== Handle Move ==========================================================>
     private void handleMove(MakeMoveCommand command, Session session) {
+
         HandlerContext ctx = initHandler(command, session);
         if (ctx == null) {
             return;
@@ -104,9 +104,9 @@ public class GameWebSocketHandler {
         ChessGame chessGame = ctx.game.game();
 
 
-        String resignedUser = resignedGames.get(ctx.gameID);
-        if (resignedUser != null) {
-            sendError(session, "Error: The game is already over. " + resignedUser + " resigned.");
+        GameOverReason over = gameOverStates.getOrDefault(ctx.gameID, GameOverReason.NONE);
+        if (over != GameOverReason.NONE) {
+            sendError(session, "Error: The game is already over (" + over + ").");
             return;
         }
 
@@ -165,14 +165,20 @@ public class GameWebSocketHandler {
                 ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
 
         if (chessGame.isInCheckmate(opponent)) {
+            gameOverStates.put(ctx.gameID, GameOverReason.CHECKMATE);
             broadcastAll(ctx.gameID, new NotificationMessage("Checkmate! " + ctx.username + " wins."));
         } else if (chessGame.isInCheck(opponent)) {
             broadcastAll(ctx.gameID, new NotificationMessage("Check against " + opponent.name()));
         } else if (chessGame.isInStalemate(opponent)) {
+            gameOverStates.put(ctx.gameID, GameOverReason.STALEMATE);
             broadcastAll(ctx.gameID, new NotificationMessage("Stalemate! The game is a draw."));
         }
 
         //holy moly
+    }
+
+    private enum GameOverReason {
+        NONE, RESIGNATION, CHECKMATE, STALEMATE
     }
 
     //<========================================================== Handle Resign ==========================================================>
@@ -182,8 +188,8 @@ public class GameWebSocketHandler {
             return;
         }
         //check for resign
-        if (resignedGames.containsKey(ctx.gameID)) {
-            sendError(session, "Error: Game already ended due to resignation.");
+        if (gameOverStates.containsKey(ctx.gameID)) {
+            sendError(session, "Error: Game is already over.");
             return;
         }
 
@@ -192,8 +198,7 @@ public class GameWebSocketHandler {
             return;
         }
 
-        resignedGames.put(ctx.gameID, ctx.username);
-
+        gameOverStates.put(ctx.gameID, GameOverReason.RESIGNATION);
         broadcastAll(ctx.gameID, new NotificationMessage(ctx.username + " has resigned."));
 
         try {
@@ -347,4 +352,6 @@ public class GameWebSocketHandler {
 
         return new HandlerContext(authToken, auth.username(), gameID, game, auth);
     }
+
+
 }

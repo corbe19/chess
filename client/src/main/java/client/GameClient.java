@@ -25,22 +25,22 @@ public class GameClient {
         socket.connect(port);
     }
 
-    public void joinGame(ChessGame.TeamColor color) throws IOException {
+    public void joinGame(ChessGame.TeamColor color) throws Exception {
         var command = new JoinPlayerCommand(authToken, gameID, color);  //null = observer
         socket.send(command);
     }
 
-    public void makeMove(ChessMove move) throws IOException {
+    public void makeMove(ChessMove move) throws Exception {
         var command = new MakeMoveCommand(authToken, gameID, move);
         socket.send(command);
     }
 
-    public void resign() throws IOException {
+    public void resign() throws Exception {
         var command = new ResignCommand(authToken, gameID);
         socket.send(command);
     }
 
-    public void leave() throws IOException {
+    public void leave() throws Exception {
         var command = new LeaveCommand(authToken, gameID);
         socket.send(command);
     }
