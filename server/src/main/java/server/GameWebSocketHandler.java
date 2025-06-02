@@ -20,7 +20,6 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,10 +28,10 @@ public class GameWebSocketHandler {
     private final AuthDAO authDAO = new AuthDAO();
     private final GameDAO gameDAO = new GameDAO();
 
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
 
-    private static final Map<Integer, Map<String, Session>> sessionsByGame = new ConcurrentHashMap<>();
+    private static final Map<Integer, Map<String, Session>> SESSIONS_BY_GAME = new ConcurrentHashMap<>();
     private final Map<Integer, GameOverReason> gameOverStates = new ConcurrentHashMap<>();
 
 
@@ -44,19 +43,19 @@ public class GameWebSocketHandler {
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         //loop through games and remove this one
-        for (var entry : sessionsByGame.entrySet()) {
+        for (var entry : SESSIONS_BY_GAME.entrySet()) {
             entry.getValue().values().removeIf(s -> s.equals(session));
         }
     }
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         try {
-            UserGameCommand base = gson.fromJson(message, UserGameCommand.class);
+            UserGameCommand base = GSON.fromJson(message, UserGameCommand.class);
             switch (base.getCommandType()) {
-                case CONNECT -> handleConnect(gson.fromJson(message, ConnectCommand.class), session);
-                case MAKE_MOVE -> handleMove(gson.fromJson(message, MakeMoveCommand.class), session);
-                case LEAVE -> handleLeave(gson.fromJson(message, LeaveCommand.class), session);
-                case RESIGN -> handleResign(gson.fromJson(message, ResignCommand.class), session);
+                case CONNECT -> handleConnect(GSON.fromJson(message, ConnectCommand.class), session);
+                case MAKE_MOVE -> handleMove(GSON.fromJson(message, MakeMoveCommand.class), session);
+                case LEAVE -> handleLeave(GSON.fromJson(message, LeaveCommand.class), session);
+                case RESIGN -> handleResign(GSON.fromJson(message, ResignCommand.class), session);
                 default -> sendError(session, "Error: Unknown command");
             }
         } catch (Exception e) {
@@ -73,7 +72,7 @@ public class GameWebSocketHandler {
         }
 
         //store session for later
-        sessionsByGame.computeIfAbsent(ctx.gameID, k -> new ConcurrentHashMap<>()).put(ctx.authToken, session);
+        SESSIONS_BY_GAME.computeIfAbsent(ctx.gameID, k -> new ConcurrentHashMap<>()).put(ctx.authToken, session);
 
         send(session, new LoadGameMessage(ctx.game.game()));
 
@@ -216,10 +215,10 @@ public class GameWebSocketHandler {
             return;
         }
 
-        if (sessionsByGame.containsKey(ctx.gameID)) {
-            sessionsByGame.get(ctx.gameID).remove(ctx.authToken);
-            if (sessionsByGame.get(ctx.gameID).isEmpty()) {
-                sessionsByGame.remove(ctx.gameID);
+        if (SESSIONS_BY_GAME.containsKey(ctx.gameID)) {
+            SESSIONS_BY_GAME.get(ctx.gameID).remove(ctx.authToken);
+            if (SESSIONS_BY_GAME.get(ctx.gameID).isEmpty()) {
+                SESSIONS_BY_GAME.remove(ctx.gameID);
             }
         }
 
@@ -259,8 +258,8 @@ public class GameWebSocketHandler {
 
     //I dont want to send duplicate notifications to players
     private void broadcastExcept(int gameID, ServerMessage message, String excludeAuthToken) {
-        Map<String, Session> clients = sessionsByGame.getOrDefault(gameID, Map.of());
-        String json = gson.toJson(message);
+        Map<String, Session> clients = SESSIONS_BY_GAME.getOrDefault(gameID, Map.of());
+        String json = GSON.toJson(message);
         for (Map.Entry<String, Session> entry : clients.entrySet()) {
             if (!entry.getKey().equals(excludeAuthToken)) {
                 try {
@@ -273,8 +272,8 @@ public class GameWebSocketHandler {
     }
 
     private void broadcastAll(int gameID, ServerMessage message) {
-        Map<String, Session> clients = sessionsByGame.getOrDefault(gameID, Map.of());
-        String json = gson.toJson(message);
+        Map<String, Session> clients = SESSIONS_BY_GAME.getOrDefault(gameID, Map.of());
+        String json = GSON.toJson(message);
 
         for (Session session : clients.values()) {
             try {
@@ -287,7 +286,7 @@ public class GameWebSocketHandler {
 
     private void send(Session session, ServerMessage message) {
         try {
-            String json = gson.toJson(message);
+            String json = GSON.toJson(message);
             session.getRemote().sendString(json);
         } catch (Exception e) {
             e.printStackTrace();
@@ -297,7 +296,7 @@ public class GameWebSocketHandler {
     private void sendError(Session session, String msg) {
         if (session != null) {
             try {
-                session.getRemote().sendString(gson.toJson(new ErrorMessage(msg)));
+                session.getRemote().sendString(GSON.toJson(new ErrorMessage(msg)));
             } catch (Exception e) {
                 e.printStackTrace();
             }

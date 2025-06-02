@@ -32,40 +32,52 @@ public class GameREPL {
         while (true) {
             System.out.print("> ");
             String[] tokens = scanner.nextLine().trim().split("\\s+");
-            if (tokens.length == 0 || tokens[0].isEmpty()) continue;
+            if (tokens.length == 0 || tokens[0].isEmpty()) {
+                continue;
+            }
 
-            switch (tokens[0].toLowerCase()) {
-                case "help" -> printHelp();
-                case "redraw" -> {
-                    System.out.println();
-                    drawBoard();
-                    System.out.println();
-                }
-                case "move" -> handleMove(tokens);
-                case "highlight" -> handleHighlight(tokens);
-                case "resign" -> {
-                    if (confirm(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Are you sure you want to resign?"
-                    + EscapeSequences.RESET_TEXT_COLOR)) {
-                        try {
-                            client.resign();
-                        } catch (Exception e) {
-                            System.out.println("Error resigning: " + e.getMessage());
-                        }
-                    }
-                }
-                case "leave" -> {
-                    try {
-                        client.leave();
-                    } catch (Exception e) {
-                        System.out.println("Error leaving: " + e.getMessage());
-                    }
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "You left the game."
-                    + EscapeSequences.RESET_TEXT_COLOR);
-                    return;
-                }
-                default -> System.out.println("Unknown command. Type 'help'.");
+            if (!processCommand(tokens)) {
+                break; //exit
+            }        }
+    }
+
+    private boolean processCommand(String[] tokens) {
+        switch (tokens[0].toLowerCase()) {
+            case "help" -> printHelp();
+            case "redraw" -> {
+                System.out.println();
+                drawBoard();
+                System.out.println();
+            }
+            case "move" -> handleMove(tokens);
+            case "highlight" -> handleHighlight(tokens);
+            case "resign" -> handleResign();
+            case "leave" -> {
+                handleLeave();
+                return false;  //signal exit
+            }
+            default -> System.out.println("Unknown command. Type 'help'.");
+        }
+        return true;
+    }
+
+    private void handleResign() {
+        if (confirm(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Are you sure you want to resign?" + EscapeSequences.RESET_TEXT_COLOR)) {
+            try {
+                client.resign();
+            } catch (Exception e) {
+                System.out.println("Error resigning: " + e.getMessage());
             }
         }
+    }
+
+    private void handleLeave() {
+        try {
+            client.leave();
+        } catch (Exception e) {
+            System.out.println("Error leaving: " + e.getMessage());
+        }
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "You left the game." + EscapeSequences.RESET_TEXT_COLOR);
     }
 
     private void drawBoard() {
